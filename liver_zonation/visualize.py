@@ -66,8 +66,8 @@ def bbox(img, cell_num):
 
 def plot_individual_cell(image_path, save_path, cell_num):
     image = imread(image_path)
-    cell_mask = np.load(f'{save_path}_cell_mask.npy')
-    mito_mask = np.load(f'{save_path}_mito_mask.npy')
+    cell_mask = np.load(f'{save_path}cell_mask.npy')
+    mito_mask = np.load(f'{save_path}mito_mask.npy')
     ld_mask = np.load(f'{save_path}ld_mask.npy')
     
     bound_box = bbox(cell_mask, cell_num)

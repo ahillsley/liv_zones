@@ -9,10 +9,11 @@ pd.options.mode.chained_assignment = None
 class properties:
     
     def __init__(self, save_path, scale=1):
-        self.cell_mask = np.load(f'{save_path}_cell_mask.npy')
+        self.save_path = save_path
+        self.cell_mask = np.load(f'{save_path}cell_mask.npy')
         self.cv_distance = np.load(f'{save_path}cv_distance.npy')
         self.pv_distance = np.load(f'{save_path}pv_distance.npy')
-        self.cell_edge_distance = np.load(f'{save_path}_cell_boundry_distance.npy')
+        self.cell_edge_distance = np.load(f'{save_path}cell_boundry_distance.npy')
         self.scale = scale
         
     def map_to_cell(self, props, mask):
@@ -21,14 +22,16 @@ class properties:
         
         return mask[y_cords, x_cords]
     
-    def mito_properties(self, save_path, min_mito_size=0):
-        mito_mask = np.load(f'{save_path}_mito_mask.npy')
+    def mito_properties(self, min_mito_size=0):
+        mito_mask = np.load(f'{self.save_path}mito_mask.npy')
         
-        mito_props_dict = regionprops_table(mito_mask, properties =('area',
-                                                        'perimeter',
-                                                        'centroid',
-                                                        'axis_major_length',
-                                                        'axis_minor_length'))
+        mito_props_dict = regionprops_table(mito_mask, properties =(
+            'label',
+            'area',
+            'perimeter',
+            'centroid',
+            'axis_major_length',
+            'axis_minor_length'))
         mito_props = pd.DataFrame.from_dict(mito_props_dict)
         mito_props['cell_id'] = self.map_to_cell(mito_props, self.cell_mask)
         mito_props['aspect_ratio'] = mito_props['axis_major_length'] / \
@@ -55,14 +58,16 @@ class properties:
         
         return ascini_position
     
-    def lipid_droplet_properties(self, save_path, min_ld_size=0):
-        ld_mask = np.load(f'{save_path}ld_mask.npy')
+    def lipid_droplet_properties(self, min_ld_size=0):
+        ld_mask = np.load(f'{self.save_path}ld_mask.npy')
         
-        ld_props_dict = regionprops_table(ld_mask, properties =('area',
-                                                        'perimeter',
-                                                        'centroid',
-                                                        'axis_major_length',
-                                                        'axis_minor_length'))
+        ld_props_dict = regionprops_table(ld_mask, properties =(
+            'label',
+            'area',
+            'perimeter',
+            'centroid',
+            'axis_major_length',
+            'axis_minor_length'))
         ld_props = pd.DataFrame.from_dict(ld_props_dict)
         ld_props['cell_id'] = self.map_to_cell(ld_props, self.cell_mask)
         ld_props['aspect_ratio'] = ld_props['axis_major_length'] / \
@@ -113,11 +118,6 @@ class properties:
             cell_props['mito_aspect_ratio'][cell-1] = np.mean(
                 single_cell['aspect_ratio'])
         
-            max_dist = np.max(self.cell_edge_distance[self.cell_mask==cell])
-            cell_props['mito_distance_from_edge'][cell-1] = np.mean(
-                (max_dist - single_cell['boundry_dist']) / \
-                max_dist) / self.scale
-            
             single_cell_ld = ld_props[ld_props['cell_id'] ==cell]
             
             cell_props['ld_density'][cell-1] = len(single_cell_ld) / \
