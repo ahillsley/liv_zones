@@ -4,11 +4,10 @@ import matplotlib.pyplot as plt
 from cellpose.io import imread
 
 
-
 def plot_individual_ascini(save_paths):
     temp = pd.read_csv(f'{save_paths[0]}average_properties_per_cell.csv')
     props = np.asarray(temp.keys().astype('str'))
-    props = np.delete(props, (0,1,2,3,4, 14))
+    #props = np.delete(props, (0,1,2,3,4, 14))
     
     for prop in props:
         for path in save_paths:
