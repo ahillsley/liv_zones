@@ -2,7 +2,7 @@ from cellpose import models
 from cellpose.io import imread
 from cellpose import utils
 import numpy as np
-from scipy.ndimage import distance_transform_bf
+from scipy.ndimage import distance_transform_edt
 
 
 def process_mito(img_path, mito_model, save_path):
@@ -31,14 +31,14 @@ def process_lipid_droplets(img_path, lipid_model, save_path):
 
 def portal_distance(save_path):
     pv_image = imread(f'{save_path}pv_distance.tif')
-    pv_distance = distance_transform_bf(pv_image)
+    pv_distance = distance_transform_edt(pv_image)
     np.save(f'{save_path}pv_distance.npy', pv_distance)
     
     return pv_distance
 
 def central_distance(save_path):
     cv_image = imread(f'{save_path}cv_distance.tif')
-    cv_distance = distance_transform_bf(cv_image)
+    cv_distance = distance_transform_edt(cv_image)
     np.save(f'{save_path}cv_distance.npy', cv_distance)
     
     return cv_distance
@@ -46,8 +46,8 @@ def central_distance(save_path):
 def cell_edge_distance(save_path, cell_mask=None):
     if cell_mask is None:
         cell_mask = np.load(f'{save_path}cell_mask.npy')
-        
-    dist_transform = utils.distance_to_boundary(cell_mask)
+    outlines = utils.masks_to_outlines(cell_mask)
+    dist_transform = distance_transform_edt((outlines==False)*1)
     
     np.save(f'{save_path}cell_boundry_distance.npy', dist_transform)
     return
