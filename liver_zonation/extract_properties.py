@@ -46,7 +46,12 @@ class properties:
         # portal vein = 1, central vein = -1
         mito_props['ascini_position'] = self.ascini_position(mito_props)
         
-        mito_props.to_csv(f'{save_path}mitochondria_properties.csv')
+        mito_props['aspect_type_1'], \
+        mito_props['aspect_type_2'], \
+        mito_props['aspect_type_3'] = self.split_types(
+            mito_props, 'aspect_ratio', (1.2, 2))
+        
+        mito_props.to_csv(f'{self.save_path}mitochondria_properties.csv')
         
         return mito_props
     
@@ -78,11 +83,27 @@ class properties:
         
         ld_props['ascini_position'] = self.ascini_position(ld_props)
         
-        ld_props.to_csv(f'{save_path}lipid_dropplet_properties.csv')
+        ld_props['aspect_type_1'], \
+        ld_props['aspect_type_2'], \
+        ld_props['aspect_type_3'] = self.split_types(
+            ld_props, 'area', (500, 2000))
+        
+        ld_props.to_csv(f'{self.save_path}lipid_dropplet_properties.csv')
         
         return ld_props
     
-    def cell_properties(self, save_path):
+    def split_types(self, organelle_list, prop, bounds):
+        '''
+        Split the given dataframe into types based on "prop" and cutoffs
+        '''
+        
+        type_1 = organelle_list[prop] < bounds[0]
+        type_3 = organelle_list[prop] >= bounds[1]
+        type_2 = np.logical_or(type_1, type_3) == False
+        
+        return type_1, type_2, type_3
+    
+    def cell_properties(self):
         cell_props_dict = regionprops_table(
             self.cell_mask, properties = ('area', 'centroid', 'label'))
         cell_props_1 = pd.DataFrame.from_dict(cell_props_dict)
@@ -95,17 +116,38 @@ class properties:
                                              'ld_avg_area',
                                              'ld_percent_total_area',
                                              'ld_distance_from_edge',
+                                             'type_1_mito_density',
+                                             'type_2_mito_density',
+                                             'type_3_mito_density',
+                                             'percent_type_1_mito',
+                                             'percent_type_2_mito',
+                                             'percent_type_3_mito',
+                                             'type_1_ld_density',
+                                             'type_2_ld_density',
+                                             'type_3_ld_density',
+                                             'percent_type_1_ld',
+                                             'percent_type_2_ld',
+                                             'percent_type_3_ld',
+                                             'type_1_mito_dist_from_edge',
+                                             'type_2_mito_dist_from_edge',
+                                             'type_3_mito_dist_from_edge',
+                                             'type_1_ld_dist_from_edge',
+                                             'type_2_ld_dist_from_edge',
+                                             'type_3_ld_dist_from_edge',
                                              ],
                                   index = range(0,len(cell_props_dict['label'])))
     
         cell_props = pd.concat((cell_props_1, cell_props_2), axis=1)
         cell_props['area'] = cell_props['area'] / self.scale**2
         
-        mito_props = self.mito_properties(save_path)
-        ld_props = self.lipid_droplet_properties(save_path)
+        mito_props = self.mito_properties()
+        ld_props = self.lipid_droplet_properties()
         
         for cell in cell_props['label']:
             single_cell = mito_props[mito_props['cell_id']==cell]
+            
+            # Standard properties
+            # ----------------------------------------------------
             cell_props['mito_density'][cell-1] = len(single_cell) / \
                 (cell_props['area'][cell-1] / self.scale**2)
                 
@@ -129,12 +171,105 @@ class properties:
             cell_props['ld_percent_total_area'][cell-1] = np.sum(
                 single_cell_ld['area']) / cell_props['area'][cell-1]
             
-            cell_props['ld_distance_from_edge'][cell-1] = np.mean(
-                (max_dist - single_cell_ld['boundry_dist']) / \
-                max_dist) / self.scale
+            # Position within cell and ascini
+            # ----------------------------------------------------
+            cell_props['mito_distance_from_edge'][cell-1] = \
+                self.dist_from_edge(cell_props.iloc[cell-1], single_cell)
+            
+            cell_props['ld_distance_from_edge'][cell-1] = \
+                self.dist_from_edge(cell_props.iloc[cell-1], single_cell_ld)
             
             cell_props['ascini_position'] = self.ascini_position(cell_props)
-        
-        cell_props.to_csv(f'{save_path}average_properties_per_cell.csv')
+            
+            # Specific organelle type properties
+            # ----------------------------------------------------
+            cell_props['type_1_mito_density'][cell-1] = np.sum(
+                single_cell['aspect_type_1']) / (
+                    cell_props['area'][cell-1] / self.scale**2)
+            
+            cell_props['type_2_mito_density'][cell-1] = np.sum(
+                single_cell['aspect_type_2']) / (
+                    cell_props['area'][cell-1] / self.scale**2)
+            
+            cell_props['type_3_mito_density'][cell-1] = np.sum(
+                single_cell['aspect_type_3']) / (
+                    cell_props['area'][cell-1] / self.scale**2)
+            
+            cell_props['percent_type_1_mito'][cell-1] = np.sum(
+                single_cell['aspect_type_1']) / len(single_cell)
+            
+            cell_props['percent_type_2_mito'][cell-1] = np.sum(
+                single_cell['aspect_type_2']) / len(single_cell)
+            
+            cell_props['percent_type_3_mito'][cell-1] = np.sum(
+                single_cell['aspect_type_3']) / len(single_cell)
+            
+            cell_props['type_1_mito_dist_from_edge'][cell-1] = \
+                self.dist_from_edge(cell_props.iloc[cell-1],
+                                    single_cell[single_cell['aspect_type_1']])
+                
+            cell_props['type_2_mito_dist_from_edge'][cell-1] = \
+                self.dist_from_edge(cell_props.iloc[cell-1],
+                                    single_cell[single_cell['aspect_type_2']])
+            
+            cell_props['type_3_mito_dist_from_edge'][cell-1] = \
+                self.dist_from_edge(cell_props.iloc[cell-1],
+                                    single_cell[single_cell['aspect_type_3']])
+            
+            # lipid_droplets
+            cell_props['type_1_ld_density'][cell-1] = np.sum(
+                single_cell_ld['aspect_type_1']) / (
+                    cell_props['area'][cell-1] / self.scale**2)
+            
+            cell_props['type_2_ld_density'][cell-1] = np.sum(
+                single_cell_ld['aspect_type_2']) / (
+                    cell_props['area'][cell-1] / self.scale**2)
+            
+            cell_props['type_3_ld_density'][cell-1] = np.sum(
+                single_cell_ld['aspect_type_3']) / (
+                    cell_props['area'][cell-1] / self.scale**2)
+            
+            cell_props['percent_type_1_ld'][cell-1] = np.sum(
+                single_cell_ld['aspect_type_1']) / len(single_cell_ld)
+            
+            cell_props['percent_type_2_ld'][cell-1] = np.sum(
+                single_cell_ld['aspect_type_2']) / len(single_cell_ld)
+            
+            cell_props['percent_type_3_ld'][cell-1] = np.sum(
+                single_cell_ld['aspect_type_3']) / len(single_cell_ld)
+            
+            cell_props['type_1_ld_dist_from_edge'][cell-1] = \
+                self.dist_from_edge(cell_props.iloc[cell-1],
+                                    single_cell_ld[
+                                        single_cell_ld['aspect_type_1']])
+                
+            cell_props['type_2_ld_dist_from_edge'][cell-1] = \
+                self.dist_from_edge(cell_props.iloc[cell-1],
+                                    single_cell_ld[
+                                        single_cell_ld['aspect_type_2']])
+            
+            cell_props['type_3_ld_dist_from_edge'][cell-1] = \
+                self.dist_from_edge(cell_props.iloc[cell-1],
+                                    single_cell_ld[
+                                        single_cell_ld['aspect_type_3']])
+                
+        cell_props.to_csv(f'{self.save_path}average_properties_per_cell.csv')
         
         return cell_props
+    
+    def dist_from_edge(self, cell, organelle_list):
+        cc_x = float(cell['centroid-0'])
+        cc_y = float(cell['centroid-1'])
+        
+        o_s = np.asarray([organelle_list['centroid-0'],
+                          organelle_list['centroid-1']])
+        
+        cc_s = np.asarray([np.repeat(cc_x, o_s.shape[1]),
+                            np.repeat(cc_y, o_s.shape[1])])
+        # in pixels
+        dist_to_center = np.linalg.norm(cc_s - o_s, axis=0)
+        dist_to_edge = np.asarray(organelle_list['boundry_dist'])
+        rel_position = dist_to_center / (dist_to_center + dist_to_edge)
+        
+        return np.mean(rel_position)
+        
