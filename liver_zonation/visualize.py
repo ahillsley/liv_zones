@@ -4,11 +4,10 @@ import matplotlib.pyplot as plt
 from cellpose.io import imread
 
 
-
 def plot_individual_ascini(save_paths):
     temp = pd.read_csv(f'{save_paths[0]}average_properties_per_cell.csv')
     props = np.asarray(temp.keys().astype('str'))
-    props = np.delete(props, (0,1,2,3,4, 14))
+    #props = np.delete(props, (0,1,2,3,4, 14))
     
     for prop in props:
         for path in save_paths:
@@ -66,8 +65,8 @@ def bbox(img, cell_num):
 
 def plot_individual_cell(image_path, save_path, cell_num):
     image = imread(image_path)
-    cell_mask = np.load(f'{save_path}_cell_mask.npy')
-    mito_mask = np.load(f'{save_path}_mito_mask.npy')
+    cell_mask = np.load(f'{save_path}cell_mask.npy')
+    mito_mask = np.load(f'{save_path}mito_mask.npy')
     ld_mask = np.load(f'{save_path}ld_mask.npy')
     
     bound_box = bbox(cell_mask, cell_num)
@@ -77,8 +76,18 @@ def plot_individual_cell(image_path, save_path, cell_num):
     roi_ld = ld_mask[bound_box[0]:bound_box[1],bound_box[2]:bound_box[3]]
     roi_image = image[:,bound_box[0]:bound_box[1],bound_box[2]:bound_box[3]]
     
-    #return roi_cell, roi_mito, roi_ld, roi_image
-    return bound_box
+    fig, axs = plt.subplots(2, 3)
+    axs[0,0].imshow(roi_cell)
+    axs[0,1].imshow(roi_mito)
+    axs[0,2].imshow(roi_ld)
+    axs[1,0].imshow(roi_image[0,:,:])
+    axs[1,1].imshow(roi_image[1,:,:])
+    axs[1,2].imshow(roi_image[2,:,:])
+    [axi.set_axis_off() for axi in axs.ravel()]
+    plt.figure()
+    
+    return roi_cell, roi_mito, roi_ld, roi_image
+    #return bound_box
 
 def individual_cell_scatter(save_path, cell_num, prop):
     cell_props = pd.read_csv(f'{save_path}average_properties_per_cell.csv')
@@ -102,10 +111,8 @@ def individual_cell_scatter(save_path, cell_num, prop):
 def color_by_prop(image, prop_list, prop):
     new_img = np.zeros((image.shape[0], image.shape[1]))
     for i in np.unique(image)[1:]:
-        prop_value = prop_list[prop][prop_list['Unnamed: 0'] == i]
+        prop_value = prop_list[prop][prop_list['label'] == i]
         new_img[image == i] = float(prop_value)
-    plt.imshow(new_img)
-    plt.colorbar()
     
     return new_img
 
@@ -119,24 +126,28 @@ def single_cell_plots(image_path, save_path, cell_num, mito_prop, ld_prop, cell_
     mito_colored = color_by_prop(roi_mito, mito_props, mito_prop)
     ld_colored = color_by_prop(roi_ld, ld_props, ld_prop)
     
+    cmap = plt.cm.get_cmap("viridis").copy()
+    cmap.set_under('#8D98A7')
+    
     fig, axs = plt.subplots(2, 3)
-    axs[0,0].imshow(roi_cell)
-    axs[0,1].imshow(mito_colored)
-    axs[0,2].imshow(ld_colored)
+    axs[0,0].imshow(roi_cell, cmap=cmap, vmin=1)
+    axs[0,1].imshow(mito_colored, cmap=cmap, vmin=1)
+    axs[0,2].imshow(ld_colored, cmap=cmap, vmin=1)
     axs[1,0].imshow(roi_image[0,:,:])
     axs[1,1].imshow(roi_image[1,:,:])
     axs[1,2].imshow(roi_image[2,:,:])
     [axi.set_axis_off() for axi in axs.ravel()]
-    plt.savefig(f'{save_path}single_cell_subplots.png', bbox_inches='tight')
+    plt.savefig(f'{save_path}single_cell_subplots.png', bbox_inches='tight', dpi=400)
     
     plt.figure()
     individual_cell_scatter(save_path, cell_num, cell_prop)
     label_ascini_cells(save_path)
         
     return
-
+    
+    
 def label_ascini_cells(save_path):
-    cell_mask = np.load(f'{save_path}_cell_mask.npy')
+    cell_mask = np.load(f'{save_path}cell_mask.npy')
     cell_props = pd.read_csv(f'{save_path}average_properties_per_cell.csv')
     plt.imshow(cell_mask)
     plt.axis('off')
@@ -146,3 +157,8 @@ def label_ascini_cells(save_path):
     plt.savefig(f'{save_path}labled_cells.png', dpi=300, bbox_inches='tight')
     
     return
+
+# 
+    
+
+
