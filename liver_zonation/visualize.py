@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from cellpose.io import imread
 
 
-def plot_individual_ascini(save_paths):
+def plot_individual_ascini(save_paths, color):
     temp = pd.read_csv(f'{save_paths[0]}average_properties_per_cell.csv')
     props = np.asarray(temp.keys().astype('str'))
     #props = np.delete(props, (0,1,2,3,4, 14))
@@ -15,7 +15,7 @@ def plot_individual_ascini(save_paths):
             b = b[b['area'] > 200 ]
             b = b.sort_values('ascini_position')
             trend = b.rolling(50, min_periods=20).mean()
-            plt.plot(trend['ascini_position'], trend[prop], c='g', linewidth=2)
+            plt.plot(trend['ascini_position'], trend[prop], c=color, linewidth=2)
         plt.title(prop, size=15)
         plt.xlabel('relative ascini position', size=15)
         plt.ylabel(prop, size=15)
