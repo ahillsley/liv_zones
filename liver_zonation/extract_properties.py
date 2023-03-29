@@ -31,7 +31,8 @@ class properties:
             'perimeter',
             'centroid',
             'axis_major_length',
-            'axis_minor_length'))
+            'axis_minor_length',
+            'solidity'))
         mito_props = pd.DataFrame.from_dict(mito_props_dict)
         mito_props['cell_id'] = self.map_to_cell(mito_props, self.cell_mask)
         mito_props['aspect_ratio'] = mito_props['axis_major_length'] / \
@@ -112,6 +113,7 @@ class properties:
                                              'mito_percent_total_area',
                                              'mito_distance_from_edge',
                                              'mito_aspect_ratio',
+                                             'mito_solidity',
                                              'ld_density',
                                              'ld_avg_area',
                                              'ld_percent_total_area',
@@ -159,6 +161,9 @@ class properties:
             
             cell_props['mito_aspect_ratio'][cell-1] = np.mean(
                 single_cell['aspect_ratio'])
+            
+            cell_props['mito_solidity'][cell-1] = np.mean(
+                single_cell['solidity'])
         
             single_cell_ld = ld_props[ld_props['cell_id'] ==cell]
             
