@@ -23,6 +23,50 @@ def plot_individual_ascini(save_paths, color):
             
     return
 
+def plot_individual_ascini_grouped(
+        save_paths_1,
+        save_paths_2,
+        save_paths_3,
+        color):
+    temp = pd.read_csv(f'{save_paths_1[0]}average_properties_per_cell.csv')
+    props = np.asarray(temp.keys().astype('str'))
+    #props = np.delete(props, (0,1,2,3,4, 14))
+    
+    for prop in props:
+        f, (ax1, ax2, ax3) = plt.subplots(1,3, sharey=True,
+                                          figsize=(12,4))
+        for path in save_paths_1:
+            b = pd.read_csv(f'{path}average_properties_per_cell.csv')
+            
+            b = b[b['area'] > 200 ]
+            b = b.sort_values('ascini_position')
+            trend = b.rolling(50, min_periods=20).mean()
+            ax1.plot(trend['ascini_position'], trend[prop], c='b', linewidth=2)
+            ax1.set_title(prop, size=15)
+        
+            ax1.set_ylabel(prop, size=15)
+        
+        
+        for path in save_paths_2:
+            b = pd.read_csv(f'{path}average_properties_per_cell.csv')
+            
+            b = b[b['area'] > 200 ]
+            b = b.sort_values('ascini_position')
+            trend = b.rolling(50, min_periods=20).mean()
+            ax2.plot(trend['ascini_position'], trend[prop], c='orange', linewidth=2)
+            
+        for path in save_paths_3:
+            b = pd.read_csv(f'{path}average_properties_per_cell.csv')
+            
+            b = b[b['area'] > 200 ]
+            b = b.sort_values('ascini_position')
+            trend = b.rolling(50, min_periods=20).mean()
+            ax3.plot(trend['ascini_position'], trend[prop], c='g', linewidth=2)
+        
+        plt.figure()
+            
+    return
+
 
 def group_ascini(paths, file_name):
     data_set = pd.read_csv(f'{paths[0]}{file_name}.csv')
@@ -36,14 +80,14 @@ def get_trendline(data_set, window):
     data_set = data_set[data_set['area'] > 200 ]
     data_set = data_set.sort_values('ascini_position')
    
-    data_set_trend = data_set.rolling(window, min_periods=100).mean()
+    data_set_trend = data_set.rolling(window, min_periods=10).mean()
    
     return data_set_trend
 
 def plot_trends(data_sets):
     colors = ['b', 'orange', 'g']
     props = np.asarray(data_sets[0].keys().astype('str'))
-    props = np.delete(props, (0,1,2,3,4, 14))
+    #props = np.delete(props, (0,1,2,3,4, 14))
     for prop in props:
         for i in range(len(data_sets)):
             plt.plot(data_sets[i]['ascini_position'], data_sets[i][prop],
