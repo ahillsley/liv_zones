@@ -73,7 +73,8 @@ class properties:
             'perimeter',
             'centroid',
             'axis_major_length',
-            'axis_minor_length'))
+            'axis_minor_length',
+            'solidity'))
         ld_props = pd.DataFrame.from_dict(ld_props_dict)
         ld_props['cell_id'] = self.map_to_cell(ld_props, self.cell_mask)
         ld_props['aspect_ratio'] = ld_props['axis_major_length'] / \
@@ -121,12 +122,33 @@ class properties:
                                              'type_1_mito_density',
                                              'type_2_mito_density',
                                              'type_3_mito_density',
+                                             'type_1_mito_avg_area',
+                                             'type_2_mito_avg_area',
+                                             'type_3_mito_avg_area',
+                                             'type_1_mito_avg_aspect_ratio',
+                                             'type_2_mito_avg_aspect_ratio',
+                                             'type_3_mito_avg_aspect_ratio',
+                                             'type_1_mito_percent_total_area',
+                                             'type_2_mito_percent_total_area',
+                                             'type_3_mito_percent_total_area',
+                                             'type_1_mito_solidity',
+                                             'type_2_mito_solidity',
+                                             'type_3_mito_solidity',
                                              'percent_type_1_mito',
                                              'percent_type_2_mito',
                                              'percent_type_3_mito',
                                              'type_1_ld_density',
                                              'type_2_ld_density',
                                              'type_3_ld_density',
+                                             'type_1_ld_avg_area',
+                                             'type_2_ld_avg_area',
+                                             'type_3_ld_avg_area',
+                                             'type_1_ld_percent_total_area',
+                                             'type_2_ld_percent_total_area',
+                                             'type_3_ld_percent_total_area',
+                                             'type_1_ld_solidity',
+                                             'type_2_ld_solidity',
+                                             'type_3_ld_solidity',
                                              'percent_type_1_ld',
                                              'percent_type_2_ld',
                                              'percent_type_3_ld',
@@ -199,6 +221,51 @@ class properties:
             cell_props['type_3_mito_density'][cell-1] = np.sum(
                 single_cell['aspect_type_3']) / (
                     cell_props['area'][cell-1] / self.scale**2)
+                    
+            cell_props['type_1_mito_avg_area'][cell-1] = np.mean(
+                single_cell['area'][
+                single_cell['aspect_type_1']] / self.scale**2)
+
+            cell_props['type_2_mito_avg_area'][cell-1] = np.mean(
+                single_cell['area'][
+                single_cell['aspect_type_2']] / self.scale**2)
+            
+            cell_props['type_3_mito_avg_area'][cell-1] =np.mean(
+                single_cell['area'][
+                single_cell['aspect_type_3']] / self.scale**2)
+            
+            cell_props['type_1_mito_avg_aspect_ratio'][cell-1] = np.mean(
+                single_cell['aspect_ratio'][
+                single_cell['aspect_type_1']] / self.scale**2)
+
+            cell_props['type_2_mito_avg_aspect_ratio'][cell-1] = np.mean(
+                single_cell['aspect_ratio'][
+                single_cell['aspect_type_2']] / self.scale**2)
+
+            cell_props['type_3_mito_avg_aspect_ratio'][cell-1] = np.mean(
+                single_cell['aspect_ratio'][
+                single_cell['aspect_type_3']] / self.scale**2)
+
+            cell_props['type_1_mito_percent_total_area'][cell-1] = np.sum(
+                single_cell['area'][
+                    single_cell['aspect_type_1']]) / cell_props['area'][cell-1]
+            
+            cell_props['type_2_mito_percent_total_area'][cell-1] = np.sum(
+                single_cell['area'][
+                    single_cell['aspect_type_2']]) / cell_props['area'][cell-1]
+            
+            cell_props['type_3_mito_percent_total_area'][cell-1] = np.sum(
+                single_cell['area'][
+                    single_cell['aspect_type_3']]) / cell_props['area'][cell-1]
+            
+            cell_props['type_1_mito_solidity'][cell-1] = np.mean(
+                single_cell['solidity'][single_cell['aspect_type_1']])
+            
+            cell_props['type_2_mito_solidity'][cell-1] = np.mean(
+                single_cell['solidity'][single_cell['aspect_type_2']])
+            
+            cell_props['type_3_mito_solidity'][cell-1] = np.mean(
+                single_cell['solidity'][single_cell['aspect_type_3']])
             
             cell_props['percent_type_1_mito'][cell-1] = np.sum(
                 single_cell['aspect_type_1']) / len(single_cell)
@@ -233,6 +300,42 @@ class properties:
             cell_props['type_3_ld_density'][cell-1] = np.sum(
                 single_cell_ld['aspect_type_3']) / (
                     cell_props['area'][cell-1] / self.scale**2)
+            
+            cell_props['type_1_ld_avg_area'][cell-1] = np.mean(
+                single_cell_ld['area'][
+                single_cell_ld['aspect_type_1']] / self.scale**2)
+
+            cell_props['type_2_ld_avg_area'][cell-1] = np.mean(
+                single_cell_ld['area'][
+                single_cell_ld['aspect_type_2']] / self.scale**2)
+            
+            cell_props['type_3_ld_avg_area'][cell-1] =np.mean(
+                single_cell_ld['area'][
+                single_cell_ld['aspect_type_3']] / self.scale**2)
+            
+            cell_props['type_1_ld_percent_total_area'][cell-1] = np.sum(
+                single_cell_ld['area'][
+                single_cell_ld['aspect_type_1']]
+                ) / cell_props['area'][cell-1]
+            
+            cell_props['type_2_ld_percent_total_area'][cell-1] = np.sum(
+                single_cell_ld['area'][
+                single_cell_ld['aspect_type_2']]
+                ) / cell_props['area'][cell-1]
+            
+            cell_props['type_3_ld_percent_total_area'][cell-1] = np.sum(
+                single_cell_ld['area'][
+                single_cell_ld['aspect_type_3']]
+                ) / cell_props['area'][cell-1]
+            
+            cell_props['type_1_ld_solidity'][cell-1] = np.mean(
+                single_cell_ld['solidity'][single_cell_ld['aspect_type_1']])
+            
+            cell_props['type_2_ld_solidity'][cell-1] = np.mean(
+                single_cell_ld['solidity'][single_cell_ld['aspect_type_2']])
+            
+            cell_props['type_3_ld_solidity'][cell-1] = np.mean(
+                single_cell_ld['solidity'][single_cell_ld['aspect_type_3']])
             
             cell_props['percent_type_1_ld'][cell-1] = np.sum(
                 single_cell_ld['aspect_type_1']) / len(single_cell_ld)
