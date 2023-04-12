@@ -90,12 +90,12 @@ if __name__ == '__main__':
     
     start = time.time()
     for save_path, image_path in zip(save_paths, images):
-        segment.process_cells(image_path, cell_model, save_path)
-        segment.process_mito(image_path, mito_model, save_path)
-        segment.process_lipid_droplets(image_path, lipid_model, save_path)
-        segment.central_distance(save_path)
-        segment.portal_distance(save_path)
-        segment.cell_edge_distance(save_path)
+        # segment.process_cells(image_path, cell_model, save_path)
+        # segment.process_mito(image_path, mito_model, save_path)
+        # segment.process_lipid_droplets(image_path, lipid_model, save_path)
+        # segment.central_distance(save_path)
+        # segment.portal_distance(save_path)
+        # segment.cell_edge_distance(save_path)
         
         a = ex_prop.properties(save_path, 14.4042)
         a.cell_properties()

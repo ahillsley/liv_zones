@@ -80,7 +80,7 @@ def get_trendline(data_set, window):
     data_set = data_set[data_set['area'] > 200 ]
     data_set = data_set.sort_values('ascini_position')
    
-    data_set_trend = data_set.rolling(window, min_periods=10).mean()
+    data_set_trend = data_set.rolling(window, min_periods=50, center=True).mean()
    
     return data_set_trend
 
@@ -95,7 +95,7 @@ def plot_trends(data_sets):
         plt.title(prop, size=15)
         plt.xlabel('ascini position', size=15)
         plt.ylabel(prop, size=15)
-        plt.xticks(size=10)
+        plt.xticks(np.linspace(-1,1,9),size=10)
         plt.yticks(size=10)
         plt.legend(['set_1', 'set_2', 'set_3'])
         plt.figure()

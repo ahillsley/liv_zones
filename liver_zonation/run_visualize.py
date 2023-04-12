@@ -101,11 +101,16 @@ if __name__ == '__main__':
     data_set_2 = visualize.group_ascini(ds2_paths, 'average_properties_per_cell')
     data_set_3 = visualize.group_ascini(ds3_paths, 'average_properties_per_cell')
     
+    aa
     trend_1 = visualize.get_trendline(data_set_1, window=200)
     trend_2 = visualize.get_trendline(data_set_2, window=200)
     trend_3 = visualize.get_trendline(data_set_3, window=200)
     
     visualize.plot_trends([trend_1, trend_2, trend_3])
+    visualize.plot_individual_ascini_grouped(ds1_paths,
+                                             ds2_paths,
+                                             ds3_paths,
+                                             color='g')
     visualize.plot_individual_ascini(ds1_paths, color='b')
     visualize.plot_individual_ascini(ds2_paths, color='orange')
     visualize.plot_individual_ascini(ds3_paths, color='g')
