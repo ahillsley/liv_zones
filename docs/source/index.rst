@@ -19,4 +19,6 @@ Full Documentation:
   :maxdepth: 2
 
   install
+  features
+  tutorial
   api
