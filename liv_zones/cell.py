@@ -3,7 +3,7 @@ import numpy as np
 
 from skimage.measure import regionprops_table
 
-import organelle as org
+from liv_zones import organelle as org
 
 
 mito_properties = [

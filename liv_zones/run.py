@@ -1,8 +1,8 @@
 import pandas as pd
 
-import preprocess as pre
-import organelle as org
-import cell as c
+from liv_zones import preprocess as pre
+from liv_zones import organelle as org
+from liv_zones import cell as c
 
 
 """ 
@@ -29,7 +29,7 @@ Options
 
 run_preprocessing = False
 organelle_features = False
-cell_features = True
+cell_features = False
 
 
 """

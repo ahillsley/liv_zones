@@ -8,7 +8,7 @@ warnings.filterwarnings("ignore")
 from cellpose import models, utils
 from cellpose.io import imread
 
-import organelle_model as org_models
+from liv_zones import organelle_model as org_models
 
 
 # Always define save path not including the last /
