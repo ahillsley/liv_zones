@@ -3,7 +3,7 @@ import numpy as np
 
 from skimage.measure import regionprops_table
 
-import organelle
+import organelle as org
 
 
 mito_properties = [
@@ -56,45 +56,34 @@ lipid_droplet_properties = [
     ]
 
 property_list = mito_properties + lipid_droplet_properties
-
-def cell_properties(
-        mito_props_path,
-        lipid_props_path,
-        cell_mask,
-        cv_distance,
-        pv_distance,
-        scale, # pixel size
-        save,
-        save_path
-        ):
-    ''' 
-    Calculates properties 
-    '''
     
-    if mito_props_path is None:
-        mito_props = organelle.mito_properties(
-            mito_mask,
-            cell_mask,
-            cell_edge_distance,
-            cv_distance,
-            pv_distance,
-            save_path)
-    else:
-        mito_props = pd.read_csv(f'{mito_props_path}')
-        
-    if lipid_props_path is None:
-        mito_props = organelle.lipid_droplet_properties(
-            lipid_droplet_mask,
-            cell_mask,
-            cell_edge_distance,
-            cv_distance,
-            pv_distance,
-            save_path)
-    else:
-        lipid_props = pd.read_csv(f'{lipid_props_path}')
+def cell_features(path, scale):
+    
+    lipid_props = pd.read_csv(f'{path}/lipid_droplet_properties.csv')
+    mito_props = pd.read_csv(f'{path}/mitochondria_properties.csv')
+    
+    masks = org.Masks(path)
+    
+    cell_props(
+        mito_props = mito_props,
+        lipid_props = lipid_props,
+        save_path = path,
+        masks=masks,
+        scale=scale)
+
+
+def cell_props(
+        mito_props,
+        lipid_props,
+        save_path,
+        masks,
+        scale,
+        properties_list=property_list,
+        save=True
+        ):
     
     cell_props_dict = regionprops_table(
-        cell_mask,
+        masks.cell_mask,
         properties = ('area', 'centroid', 'label')
         )
     
@@ -107,90 +96,93 @@ def cell_properties(
 
     cell_props = pd.concat((cell_props_1, cell_props_2), axis=1)
     cell_props['area'] = cell_props['area'] / scale **2
-    cell_props['ascini_position'] = organelle.ascini_position(
+    cell_props['ascini_position'] = org.ascini_position(
         cell_props,
-        cv_distance,
-        pv_distance)
+        masks.cv_distance,
+        masks.pv_distance)
     
     organelles = OrganelleFuncs(
-        cell=1,
+        index=1,
         mito_props=mito_props,
         lipid_props=lipid_props,
         cell_props=cell_props)
     
     for cell in cell_props['label']:
-        organelles.cell = cell
+        index = cell-1
+        organelles.index = index
+        organelles.single_cell_mitos = mito_props[mito_props['cell_id'] == cell]
+        organelles.single_cell_lipid_droplets = lipid_props[lipid_props['cell_id'] == cell]
         
         # Mitochondria Properties
         # -----------------------
-        cell_props['mito_density'][cell-1] = organelles.density('mito')
-        cell_props['mito_avg_area'][cell-1] = organelles.avg_area('mito')
-        cell_props['mito_percent_total_area'][cell-1] = organelles.percent_total_area('mito')
-        cell_props['mito_aspect_ratio'][cell-1] = organelles.mito_aspect_ratio()
-        cell_props['mito_solidity'][cell-1] = organelles.mito_solidity()
-        cell_props['mito_distance_from_edge'][cell-1] = organelles.distance_from_edge('mito')
+        cell_props['mito_density'][index] = organelles.density('mito')
+        cell_props['mito_avg_area'][index] = organelles.avg_area('mito')
+        cell_props['mito_percent_total_area'][index] = organelles.percent_total_area('mito')
+        cell_props['mito_aspect_ratio'][index] = organelles.mito_aspect_ratio()
+        cell_props['mito_solidity'][index] = organelles.mito_solidity()
+        cell_props['mito_distance_from_edge'][index] = organelles.distance_from_edge('mito')
         
-        cell_props['type_1_mito_density'][cell-1] = organelles.type_density('mito', 1)
-        cell_props['type_2_mito_density'][cell-1] = organelles.type_density('mito', 2)
-        cell_props['type_3_mito_density'][cell-1] = organelles.type_density('mito', 3)
+        cell_props['type_1_mito_density'][index] = organelles.type_density('mito', 1)
+        cell_props['type_2_mito_density'][index] = organelles.type_density('mito', 2)
+        cell_props['type_3_mito_density'][index] = organelles.type_density('mito', 3)
         
-        cell_props['type_1_mito_avg_area'][cell-1] = organelles.type_avg_area('mito', 1)
-        cell_props['type_2_mito_avg_area'][cell-1] = organelles.type_avg_area('mito', 2)
-        cell_props['type_3_mito_avg_area'][cell-1] = organelles.type_avg_area('mito', 3)
+        cell_props['type_1_mito_avg_area'][index] = organelles.type_avg_area('mito', 1)
+        cell_props['type_2_mito_avg_area'][index] = organelles.type_avg_area('mito', 2)
+        cell_props['type_3_mito_avg_area'][index] = organelles.type_avg_area('mito', 3)
         
-        cell_props['type_1_mito_avg_aspect_ratio'][cell-1] = organelles.type_aspect_ratio('mito', 1)
-        cell_props['type_2_mito_avg_aspect_ratio'][cell-1] = organelles.type_aspect_ratio('mito', 2)
-        cell_props['type_3_mito_avg_aspect_ratio'][cell-1] = organelles.type_aspect_ratio('mito', 3)
+        cell_props['type_1_mito_avg_aspect_ratio'][index] = organelles.type_aspect_ratio('mito', 1)
+        cell_props['type_2_mito_avg_aspect_ratio'][index] = organelles.type_aspect_ratio('mito', 2)
+        cell_props['type_3_mito_avg_aspect_ratio'][index] = organelles.type_aspect_ratio('mito', 3)
         
-        cell_props['type_1_mito_percent_total_area'][cell-1] = \
+        cell_props['type_1_mito_percent_total_area'][index] = \
             organelles.type_percent_total_area('mito', 1)
-        cell_props['type_2_mito_percent_total_area'][cell-1] = \
+        cell_props['type_2_mito_percent_total_area'][index] = \
             organelles.type_percent_total_area('mito', 2)
-        cell_props['type_3_mito_percent_total_area'][cell-1] = \
+        cell_props['type_3_mito_percent_total_area'][index] = \
             organelles.type_percent_total_area('mito', 3)
             
-        cell_props['percent_type_1_mito'][cell-1] = organelles.type_percent_organelles('mito', 1)
-        cell_props['percent_type_2_mito'][cell-1] = organelles.type_percent_organelles('mito', 2)
-        cell_props['percent_type_3_mito'][cell-1] = organelles.type_percent_organelles('mito', 3)
+        cell_props['percent_type_1_mito'][index] = organelles.type_percent_organelles('mito', 1)
+        cell_props['percent_type_2_mito'][index] = organelles.type_percent_organelles('mito', 2)
+        cell_props['percent_type_3_mito'][index] = organelles.type_percent_organelles('mito', 3)
         
-        cell_props['type_1_mito_dist_from_edge'][cell-1] = organelles.type_dist_from_edge('mito', 1)
-        cell_props['type_2_mito_dist_from_edge'][cell-1] = organelles.type_dist_from_edge('mito', 2)
-        cell_props['type_3_mito_dist_from_edge'][cell-1] = organelles.type_dist_from_edge('mito', 3)
+        cell_props['type_1_mito_dist_from_edge'][index] = organelles.type_dist_from_edge('mito', 1)
+        cell_props['type_2_mito_dist_from_edge'][index] = organelles.type_dist_from_edge('mito', 2)
+        cell_props['type_3_mito_dist_from_edge'][index] = organelles.type_dist_from_edge('mito', 3)
         
         # Lipid Droplet Properties
         # ------------------------
-        cell_props['ld_density'][cell-1] = organelles.density('ld')
-        cell_props['ld_avg_area'][cell-1] = organelles.avg('ld')
-        cell_props['ld_percent_total_area'][cell-1] = organelles.percent_total_area('ld')
-        cell_props['ld_distance_from_edge'][cell-1] = organelles.distance_from_edge('ld')
+        cell_props['ld_density'][index] = organelles.density('ld')
+        cell_props['ld_avg_area'][index] = organelles.avg_area('ld')
+        cell_props['ld_percent_total_area'][index] = organelles.percent_total_area('ld')
+        cell_props['ld_distance_from_edge'][index] = organelles.distance_from_edge('ld')
         
-        cell_props['type_1_ld_density'][cell-1] = organelles.type_density('ld', 1)
-        cell_props['type_2_ld_density'][cell-1] = organelles.type_density('ld', 2)
-        cell_props['type_3_ld_density'][cell-1] = organelles.type_density('ld', 3)
+        cell_props['type_1_ld_density'][index] = organelles.type_density('ld', 1)
+        cell_props['type_2_ld_density'][index] = organelles.type_density('ld', 2)
+        cell_props['type_3_ld_density'][index] = organelles.type_density('ld', 3)
         
-        cell_props['type_1_ld_avg_area'][cell-1] = organelles.type_avg_area('ld', 1)
-        cell_props['type_2_ld_avg_area'][cell-1] = organelles.type_avg_area('ld', 2)
-        cell_props['type_3_ld_avg_area'][cell-1] = organelles.type_avg_area('ld', 3)
+        cell_props['type_1_ld_avg_area'][index] = organelles.type_avg_area('ld', 1)
+        cell_props['type_2_ld_avg_area'][index] = organelles.type_avg_area('ld', 2)
+        cell_props['type_3_ld_avg_area'][index] = organelles.type_avg_area('ld', 3)
         
-        cell_props['type_1_ld_percent_total_area'][cell-1] = \
+        cell_props['type_1_ld_percent_total_area'][index] = \
             organelles.type_percent_total_area('ld', 1)
-        cell_props['type_2_ld_percent_total_area'][cell-1] = \
+        cell_props['type_2_ld_percent_total_area'][index] = \
             organelles.type_percent_total_area('ld', 2)
-        cell_props['type_3_ld_percent_total_area'][cell-1] = \
+        cell_props['type_3_ld_percent_total_area'][index] = \
             organelles.type_percent_total_area('ld', 3)
             
-        cell_props['percent_type_1_ld'][cell-1] = organelles.type_percent_organelles('ld', 1)
-        cell_props['percent_type_2_ld'][cell-1] = organelles.type_percent_organelles('ld', 2)
-        cell_props['percent_type_3_ld'][cell-1] = organelles.type_percent_organelles('ld', 3)
+        cell_props['percent_type_1_ld'][index] = organelles.type_percent_organelles('ld', 1)
+        cell_props['percent_type_2_ld'][index] = organelles.type_percent_organelles('ld', 2)
+        cell_props['percent_type_3_ld'][index] = organelles.type_percent_organelles('ld', 3)
         
-        cell_props['type_1_ld_dist_from_edge'][cell-1] = organelles.type_dist_from_edge('ld', 1)
-        cell_props['type_2_ld_dist_from_edge'][cell-1] = organelles.type_dist_from_edge('ld', 2)
-        cell_props['type_3_ld_dist_from_edge'][cell-1] = organelles.type_dist_from_edge('ld', 3)
+        cell_props['type_1_ld_dist_from_edge'][index] = organelles.type_dist_from_edge('ld', 1)
+        cell_props['type_2_ld_dist_from_edge'][index] = organelles.type_dist_from_edge('ld', 2)
+        cell_props['type_3_ld_dist_from_edge'][index] = organelles.type_dist_from_edge('ld', 3)
         
-        if save is True:
-            cell_props.to_csv(f'{save_path}average_properties_per_cell.csv')
+    if save is True:
+        cell_props.to_csv(f'{save_path}/average_properties_per_cell.csv')
         
-        return cell_props
+    return cell_props
     
 
 class OrganelleFuncs:
@@ -213,16 +205,16 @@ class OrganelleFuncs:
     '''
     def __init__(
             self,
-            cell,
+            index,
             mito_props,
             lipid_props,
             cell_props
             ):
         
-        self.cell = cell
+        self.index = index
         self.cell_props = cell_props
-        self.single_cell_mitos = mito_props[mito_props['cell_id'] == cell]
-        self.single_cell_lipid_droplets = lipid_props[lipid_props['cell_id'] == cell]
+        self.single_cell_mitos = None
+        self.single_cell_lipid_droplets = None
         
     
     def density(self, organelle, org_type=False):
@@ -232,23 +224,23 @@ class OrganelleFuncs:
         elif organelle == 'ld':
             organelle_count = len(self.single_cell_lipid_droplets)
             
-        return organelle_count / self.cell_props['area'][self.cell-1]
+        return organelle_count / self.cell_props['area'][self.index]
     
     def avg_area(self, organelle):
         if organelle == 'mito':
-            return np.mean(self.single_cell_mitos)
+            return np.mean(self.single_cell_mitos['area'])
         
         elif organelle == 'ld':
-            return np.mean(self.single_cell_lipid_droplets)
+            return np.mean(self.single_cell_lipid_droplets['area'])
     
-    def percent_total_area(self):
+    def percent_total_area(self, organelle):
         if organelle == 'mito':
             organelle_area = np.sum(self.single_cell_mitos['area'])
         
         elif organelle == 'ld':
             organelle_area = np.sum(self.single_cell_lipid_droplets['area'])
             
-        return  organelle_area / self.cell_props['area'][self.cell-1]
+        return  organelle_area / self.cell_props['area'][self.index]
 
     def mito_aspect_ratio(self):
         return np.mean(self.single_cell_mitos['aspect_ratio'])
@@ -263,7 +255,7 @@ class OrganelleFuncs:
         elif organelle == 'ld':
             organelle_type = self.single_cell_lipid_droplets
         
-        return dist_from_edge(self.cell_props.iloc[self.cell-1], organelle_type)
+        return dist_from_edge(self.cell_props.iloc[self.index], organelle_type)
     
     def type_density(self, organelle, org_type):
         if organelle == 'mito':
@@ -271,7 +263,7 @@ class OrganelleFuncs:
         elif organelle == 'ld':
             organelle_count = np.sum(self.single_cell_lipid_droplets[f'area_type_{org_type}'])
             
-        return organelle_count / self.cell_props['area'][self.cell-1]
+        return organelle_count / self.cell_props['area'][self.index]
     
     def type_avg_area(self, organelle, org_type):
         if organelle == 'mito':
@@ -279,13 +271,14 @@ class OrganelleFuncs:
            return np.mean(self.single_cell_mitos['area'][subset])
             
         elif organelle == 'ld':
-            subset = self.single_cell_lipid_droplets()[f'area_type_{org_type}']
+            subset = self.single_cell_lipid_droplets[f'area_type_{org_type}']
             return np.mean(self.single_cell_lipid_droplets['area'][subset])
     
     def type_aspect_ratio(self, organelle, org_type):
         if organelle == 'mito':
-            return np.mean(self.single_cell_mitos[
-                self.single_cell_mitos[f'aspect_type_{org_type}']])
+            subset = self.single_cell_mitos[f'aspect_type_{org_type}']
+            return np.mean(self.single_cell_mitos['aspect_ratio'][subset])
+                
     
     def type_percent_total_area(self, organelle, org_type):
         if organelle == 'mito':
@@ -298,17 +291,17 @@ class OrganelleFuncs:
                 self.single_cell_lipid_droplets['area'][
                     self.single_cell_lipid_droplets[f'area_type_{org_type}']])
         
-        return organelle_area / self.cell_props['area'][self.cell-1]
+        return organelle_area / self.cell_props['area'][self.index]
     
     def type_percent_organelles(self, organelle, org_type):
         if organelle == 'mito':
             return np.sum(
-                self.single_cell_mitos[f'aspect_type{org_type}']
+                self.single_cell_mitos[f'aspect_type_{org_type}']
                 ) / len(self.single_cell_mitos)
         
         if organelle == 'ld':
             return np.sum(
-                self.single_cell_lipid_droplets[f'area_type{org_type}']
+                self.single_cell_lipid_droplets[f'area_type_{org_type}']
                 ) / len(self.single_cell_lipid_droplets)
     
     def type_dist_from_edge(self, organelle, org_type):
@@ -320,7 +313,7 @@ class OrganelleFuncs:
             subset = self.single_cell_lipid_droplets[
                 self.single_cell_lipid_droplets[f'area_type_{org_type}']]
             
-        return dist_from_edge(self.cell_props.iloc[self.cell-1], subset)
+        return dist_from_edge(self.cell_props.iloc[self.index], subset)
     
 
 def dist_from_edge(cell, organelle_list):
