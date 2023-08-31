@@ -25,7 +25,8 @@ docs = [
     "sphinx_togglebutton",
     "tomli",
     "jupyter_sphinx",
-    "plotly"
+    "plotly",
+    "ipykernel"
 ]
 
 [project.urls]
