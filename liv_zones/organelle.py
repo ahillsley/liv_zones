@@ -4,6 +4,12 @@ import pandas as pd
 from skimage.measure import regionprops_table
 
 
+# Adjust default values here
+# --------------------------
+mito_aspect_split = (1.2, 2)
+ld_area_split = (2.41, 9.64)
+
+
 class Masks:
     def __init__(self, path):
         self.cell_mask = np.load(f"{path}/cell_mask.npy")
@@ -15,8 +21,8 @@ class Masks:
 def organelle_features(
     path,
     scale,
-    mito_aspect_split=(1.2, 2),
-    ld_area_split=(2.41, 9.64),
+    mito_aspect_split=mito_aspect_split,
+    ld_area_split=ld_area_split,
     organelle_list=["mitos", "lipid_droplets"],
 ):
 
@@ -106,7 +112,6 @@ def lipid_droplet_properties(
             "centroid",
             "axis_major_length",
             "axis_minor_length",
-            "solidity",
         ),
     )
 
