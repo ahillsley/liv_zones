@@ -1,35 +1,64 @@
-import pandas as pd
-
 from liv_zones import preprocess as pre
 from liv_zones import organelle as org
 from liv_zones import cell as c
+from liv_zones.ascini import plot_properties, plot_cell, plot_ascinus_annotated
 
 
 """ 
-Define constants and file paths
+Define scale and file paths
 """
 
 scale = 14.4024  # pixels per micron
-
-ld_area_split = (2.41, 9.64)
-
-mito_aspect_split = (1.2, 2)
 
 
 image_paths = [
     "../test_set/0-Actin_Dendra_LD-1_Merge_WD_M1_12pm_dendra2_actin647_lipitox594.lif - TileScan 2_Merged-2.tif"
 ]
 
-save_paths = ["../test_set"]
+save_paths = [
+    "../test_set"
+    ]
 
 
 """
-Options
+Options on what to run
 """
 
+# Do you want to run the preprocessing?
 run_preprocessing = False
+
+# comment out any features that you don't want re-calculated
+feature_list = [
+    'cell_mask',
+    'mito_mask',
+    'lipid_mask',
+    'cv_distance',
+    'pv_distance',
+    'boundry_distance'
+    ]
+
+# Do you want to extract individual organelle features?
 organelle_features = False
+
+# comment out any organelles you dont want re-calculated
+organelle_list = [
+    'mitochondria',
+    'lipid_droplets',
+    ]
+
+# Do you want to calculate average features per cell?
 cell_features = False
+
+# Do you want an image of the ascinus with each cell labeled?
+plot_labeled_ascinus = False
+
+# Do you want to plot per cell properties over the length of the ascinus
+plot_props = False
+
+# Do you want to visualize a specific cell?
+show_individual_cell = False
+# the cell number corresponding to the labeled ascinus
+cell_number = 10
 
 
 """
@@ -49,7 +78,7 @@ if __name__ == "__main__":
 
         # pre-processing
         if run_preprocessing is True:
-            pre.preprocess(image_path, save_path)
+            pre.preprocess(image_path, save_path, feature_list)
 
         else:
             pre.file_check(save_path)
@@ -61,8 +90,7 @@ if __name__ == "__main__":
             org.organelle_features(
                 path=save_path,
                 scale=scale,
-                mito_aspect_split=mito_aspect_split,
-                ld_area_split=ld_area_split,
+                organelle_list=organelle_list,
             )
 
         # extract average features per cell
@@ -70,3 +98,13 @@ if __name__ == "__main__":
 
             print("averaging features per cell")
             c.cell_features(save_path, scale=scale)
+            
+        # visualizing the results
+        if plot_labeled_ascinus is True:
+            plot_ascinus_annotated(save_path)
+        
+        if plot_props is True:
+            plot_properties(save_path)
+            
+        if show_individual_cell is True:
+            plot_cell(image_path, save_path, cell_num=cell_number)
