@@ -13,7 +13,7 @@ and that your folders are organized correctly
   1. Mitochondria
 
   2. Lipid Droplets
-       
+
   * additional channels are allowed, but they will not be processed
 
 * There must be a seperate folder to store the results of each input image
@@ -43,6 +43,7 @@ In order to run the liv_zones processing, we use the ``run.py`` script
    from liv_zones import preprocess as pre
    from liv_zones import organelle as org
    from liv_zones import cell as c
+   from liv_zones.ascini import plot_properties, plot_cell, plot_ascinus_annotated
 
 
 2. Next we specify the scale and the needed file paths
@@ -72,7 +73,7 @@ In order to run the liv_zones processing, we use the ``run.py`` script
 
 3. Next we specify which analyses would like to run
    
-  1. ``run_preprocessing``: will check to make sure that all the files needed for the analysis are present in the specific `save_path` folder, and will create any that are missing. The necessary files are:
+  1. ``run_preprocessing``: `True` or `False`, If `True`, will check to make sure that all the files needed for the analysis are present in the specific `save_path` folder, and will create any that are missing. The necessary files are:
 
     * ``cell_mask.npy``: an instance segmentation mask of all cells in the image
 
@@ -88,5 +89,61 @@ In order to run the liv_zones processing, we use the ``run.py`` script
 
     * It is important that each of these files are named exactly as stated above, if not the program will not recognize them
 
-  2. ``organelle_features``: will extract features 
+  .. jupyter-execute::
 
+    # Do you want to run the preprocessing?
+    run_preprocessing = False
+
+    # comment out any features that you don't want re-calculated
+    feature_list = [
+      'cell_mask',
+      'mito_mask',
+      'lipid_droplet_mask',
+      'cv_distance',
+      'pv_distance',
+      'boundry_distance'
+      ]
+
+
+  2. ``organelle_features``: `True` or `False`, If `True`, will extract features of the organelles provided in `organelle_list` and save them in a csv file
+
+    * ``organelle_list``: possible options are `mitochondria` or `lipid_droplets`, comment out any that you do not wish to calculate
+
+   .. jupyter-execute::
+
+     #  Do you want to extract individual organelle features?
+     organelle_features = False
+
+     # comment out any organelles you dont want re-calculated
+     organelle_list = [
+        'mitochondria',
+        'lipid_droplets',
+        ]
+
+  3. Visualization options:
+
+    * ``plot_labled_ascinus``: `True` or `False`: If `True` save an image of the ascinus with each cell labeled with its ID #
+
+    * ``plot_props``: `True` or `False`: If `True` generate plots of average properties per cell as a function of ascinus position. These plots will be saved in a sub-folder `ascini_trends`
+
+    * ``show_individual_cell``: `True` or `False`: 
+
+   .. jupyter-execute::
+
+     # Do you want an image of the ascinus with each cell labeled?
+     plot_labeled_ascinus = False
+
+     # Do you want to plot per cell properties over the length of the ascinus
+     plot_props = False
+
+     # Do you want to visualize a specific cell?
+     show_individual_cell = False
+
+     # the cell number corresponding to the labeled ascinus
+     cell_number = 10 
+
+4. Run the analysis by calling saving your changes and running ``run.py`` from the terminal
+
+  .. code-block:: bash
+
+    python run.py
