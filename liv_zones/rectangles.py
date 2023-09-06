@@ -1,12 +1,11 @@
 # Diagonal Crop 
 
-import os, numpy as np
+import os, sys, numpy as np
 from PIL import Image 
 Image.MAX_IMAGE_PIXELS = 500000000
-from matplotlib import pyplot as plt 
 from matplotlib import patches
-
-os.chdir('//prfs.hhmi.org/sgrolab/mark/liver_proj/diagonal-crop')
+import tifffile
+sys.path.append('//groups/sgro/sgrolab/mark/liver_proj/diagonal-crop')
 import diagonal_crop
 
 def getRectangleCorner(coords,dist):
@@ -14,66 +13,103 @@ def getRectangleCorner(coords,dist):
     radius = np.sqrt(2*(.2*dist)**2)
     return [coords[0] + radius * np.cos(angle), coords[1]+radius*np.sin(angle)]
 
-def dispCrop(CV_coords,PV_coords):
+def dispCrop(img,CV_coords,PV_coords):
+    
+    # compute distance between portal and central vein 
     asinus_dist = np.sqrt((PV_coords[0]-CV_coords[0])**2+(PV_coords[1]-CV_coords[1])**2)
-    asinus_theta = np.arctan((CV_coords[1]-PV_coords[1])/(CV_coords[0]-PV_coords[0]))+np.pi
+    
+    # compute angle between portal and central veins relative to coordinate axes 
+    asinus_theta = np.arctan((CV_coords[1]-PV_coords[1])/(CV_coords[0]-PV_coords[0]))
+    # if PV is to the left of CV, add pi 
+    if PV_coords[0] < CV_coords[0]:
+        asinus_theta += np.pi
+    
+    # define bottom corner of bouding rectangle 
     rectangle_coords = getRectangleCorner(CV_coords,asinus_dist)
     
+    # draw box over asinus 
     box = patches.Rectangle(rectangle_coords,1.4*asinus_dist,.4*asinus_dist,angle=np.rad2deg(asinus_theta),rotation_point=(CV_coords[0],CV_coords[1]),alpha=0.5)
-
-    return diagonal_crop.crop(z00, box.get_corners()[2], np.pi-asinus_theta, .4*asinus_dist, 1.4*asinus_dist)
+    
+    # crop image according to bounding box 
+    cropped_im = diagonal_crop.crop(img, box.get_corners()[2], np.pi-asinus_theta, .4*asinus_dist, 1.4*asinus_dist)
+    
+    # return flipped image as array and box for image
+    return np.array(cropped_im),box
     
 
+# organelle_dir = '//prfs.hhmi.org/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/mito_dendra2_phall555_Lipitox_R_580_Ms_PMP70_647'
+# nuclei_dir = '//prfs.hhmi.org/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/DAPI'
+organelle_dir = '//groups/sgro/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/mito_dendra2_phall555_Lipitox_R_580_Ms_PMP70_647'
+nuclei_dir = '//groups/sgro/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/DAPI'
+lobule_dir = '//groups/sgro/sgrolab/mark/liver_proj/cnt_liver3/lobule_1'
 
-os.chdir('//prfs.hhmi.org/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/mito_dendra2_phall555_Lipitox_R_580_Ms_PMP70_647')
+asinusNum = 0
+n_zslices = 15
 
 pixels_per_um = 22.1870
-
-
-z00 = Image.open('Region 1_Merged--Z00--C00.tif')
-
-PV1_coords = [4578,5309]
-PV2_coords = [15971,2376]
+PV_coords = [[4578,5309],[15971,2376],[18702,15464]]
 CV_coords = [15024,9170]
 
-asinus1 = dispCrop(CV_coords,PV1_coords)
-asinus2 = dispCrop(CV_coords,PV2_coords)
+channels = ['C00','C01','C02','C03']
 
-plt.figure(figsize=(10,6))
-plt.subplot(2,1,1)
-plt.imshow(asinus1)
+# size the array
+os.chdir(organelle_dir)
+sample_asinus_slice = Image.open(os.listdir()[0])
+sample_asinus,sample_box = dispCrop(sample_asinus_slice,CV_coords,PV_coords[asinusNum])
 
-plt.subplot(2,1,2)
-plt.imshow(asinus2)
+# preallocate max z projection array 
+asinus_maxproj = np.zeros([5,np.size(sample_asinus,0),np.size(sample_asinus,1)],dtype='uint8')
+
+# get DAPI channel 
+os.chdir(nuclei_dir)
+for file in os.listdir():
+    # preallocate zstack for channel
+    zstack = np.zeros([n_zslices,np.size(sample_asinus,0),np.size(sample_asinus,1)],dtype='uint8')
+    
+    # iterate through and gather each z slice for channel
+    for i in range(n_zslices):
+        asinus_slice = Image.open(file)
+        asinus,box = dispCrop(asinus_slice,CV_coords,PV_coords[asinusNum])
+        zstack[i] = asinus
+    
+    asinus_maxproj[1] = np.max(zstack,axis=0)
+
+# get all other channels 
+os.chdir(organelle_dir)
+for j in range(len(channels)):
+    
+    # get all files for channel 
+    files = []
+    for file in os.listdir():
+        if channels[j] in file:
+            files.append(file)
+    
+    # preallocate zstack for channel
+    zstack = np.zeros([n_zslices,np.size(sample_asinus,0),np.size(sample_asinus,1)],dtype='uint8')
+    
+    # iterate through and gather each z slice for channel
+    for i in range(n_zslices):
+        asinus_slice = Image.open(files[i])
+        asinus,box = dispCrop(asinus_slice,CV_coords,PV_coords[asinusNum])
+        zstack[i] = asinus
+    
+    # index 0 for actin (c2), 1
+    if j==0:
+        asinus_maxproj[2] = np.max(zstack,axis=0)
+    elif j==1:
+        asinus_maxproj[0] = np.max(zstack,axis=0)
+    elif j==2:
+        asinus_maxproj[3] = np.max(zstack,axis=0)
+    else:
+        asinus_maxproj[4] = np.max(zstack,axis=0)
+
+# output as multipage TIF file 
+os.chdir(lobule_dir)
+tifffile.imwrite('asinus' + str(asinusNum) + '_z' + str(n_zslices) + '.tif',asinus_maxproj,photometric='minisblack')
 
 
-#%%
-
-plt.figure(figsize=(12,8))
 
 
-
-
-
-
-
-
-#%%
-
-fig,ax = plt.subplots(figsize=(8,6))
-
-
-plt.imshow(z00,origin='lower')
-plt.scatter(PV1_coords[0],PV1_coords[1],color='white',s=10)
-plt.scatter(CV_coords[0],CV_coords[1],color='white',s=10)
-plt.scatter(corner_coords[0],corner_coords[1],color='yellow',s=10)
-
-
-
-ax.add_patch(box)
-# ax.add_patch(patches.Rectangle(corner_coords,1.4*A1_dist,.4*A1_dist,angle=-angle/np.pi*180,alpha=0.5))
-
-# plt.scatter(corner_coords2[0],corner_coords2[1],color='r',s=10)
 
 
 
