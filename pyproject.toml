@@ -14,7 +14,7 @@ authors = [
     { name = 'Alex Hillsley', email = 'hillsleya@janelia.hhmi.org' },
 ]
 dynamic = ["version"]
-dependencies = ["numpy", "pandas", "scikit-image", "cellpose"]
+dependencies = ["numpy", "pandas", "scikit-image", "cellpose", "matplotlib"]
 
 [project.optional-dependencies]
 dev = ["pre-commit", "pytest", "pytest-cov", "ruff", "twine", "build"]
