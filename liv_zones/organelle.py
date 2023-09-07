@@ -8,6 +8,7 @@ from skimage.measure import regionprops_table
 # --------------------------
 mito_aspect_split = (1.2, 2)
 ld_area_split = (2.41, 9.64)
+peroxisome_aspect_split = (1, 2) # completely made up, need to change
 
 
 class Masks:
@@ -23,7 +24,7 @@ def organelle_features(
     scale,
     mito_aspect_split=mito_aspect_split,
     ld_area_split=ld_area_split,
-    organelle_list=["mitos", "lipid_droplets"],
+    organelle_list=["mitos", "lipid_droplets", "peroxisomes"],
 ):
 
     cell_level_masks = Masks(path)
@@ -39,6 +40,11 @@ def organelle_features(
         lipid_droplet_properties(
             lipid_droplet_mask, cell_level_masks, path, scale, ld_area_split
         )
+        
+    if "perox" in organelles:
+        peroxisome_mask = np.load(f"{path}/peroxisome_mask.npy")
+        peroxisome_properties(
+            peroxisome_mask, cell_level_masks, path, scale, peroxisome_aspect_split)
 
     return
 
@@ -144,6 +150,56 @@ def lipid_droplet_properties(
         ld_props.to_csv(f"{save_path}/lipid_droplet_properties.csv")
 
     return ld_props
+
+def peroxisome_properties(
+    peroxisome_mask, masks, save_path, scale, mito_aspect_split, save=True  # pixels / micron
+):
+
+    # returns props in pixel units
+    peroxi_props_dict = regionprops_table(
+        peroxisome_mask,
+        properties=(
+            "label",
+            "area",
+            "perimeter",
+            "centroid",
+            "axis_major_length",
+            "axis_minor_length",
+            "solidity",
+        ),
+    )
+
+    peroxi_props = pd.DataFrame.from_dict(peroxi_props_dict)
+
+    # convert from pixels to microns
+    peroxi_props["area"] = peroxi_props["area"] / (scale**2)
+    peroxi_props["perimeter"] = peroxi_props["perimeter"] / scale
+    peroxi_props["axis_major_length"] = peroxi_props["axis_major_length"] / scale
+    peroxi_props["axis_minor_length"] = peroxi_props["axis_minor_length"] / scale
+
+    peroxi_props["cell_id"] = map_to_cell(peroxi_props, masks.cell_mask)
+    peroxi_props["aspect_ratio"] = (
+        peroxi_props["axis_major_length"] / peroxi_props["axis_minor_length"]
+    )
+
+    # use formula to calc boundry to cell edge
+    peroxi_props["boundry_dist"] = map_to_cell(peroxi_props, masks.cell_edge_distance)
+
+    # use new ascini distance measure
+    # portal vein = 1, central vein = -1
+    peroxi_props["ascini_position"] = ascini_position(
+        peroxi_props, masks.cv_distance, masks.pv_distance
+    )
+
+    (
+        peroxi_props["aspect_type_1"],
+        peroxi_props["aspect_type_2"],
+        peroxi_props["aspect_type_3"],
+    ) = split_types(peroxi_props, "aspect_ratio", peroxisome_aspect_split)
+    if save is True:
+        peroxi_props.to_csv(f"{save_path}/peroxisome_properties.csv")
+
+    return peroxi_props
 
 
 def map_to_cell(props, mask):
