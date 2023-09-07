@@ -37,13 +37,13 @@ def dispCrop(img,CV_coords,PV_coords):
     return np.array(cropped_im),box
     
 
-# organelle_dir = '//prfs.hhmi.org/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/mito_dendra2_phall555_Lipitox_R_580_Ms_PMP70_647'
-# nuclei_dir = '//prfs.hhmi.org/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/DAPI'
-organelle_dir = '//groups/sgro/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/mito_dendra2_phall555_Lipitox_R_580_Ms_PMP70_647'
-nuclei_dir = '//groups/sgro/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/DAPI'
+organelle_dir = '//prfs.hhmi.org/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/mito_dendra2_phall555_Lipitox_R_580_Ms_PMP70_647'
+nuclei_dir = '//prfs.hhmi.org/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/DAPI'
+# organelle_dir = '//groups/sgro/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/mito_dendra2_phall555_Lipitox_R_580_Ms_PMP70_647'
+# nuclei_dir = '//groups/sgro/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/DAPI'
 lobule_dir = '//groups/sgro/sgrolab/mark/liver_proj/cnt_liver3/lobule_1'
 
-asinusNum = 2
+asinusNum = 0
 n_zslices = 15
 
 pixels_per_um = 22.1870
@@ -51,6 +51,8 @@ PV_coords = [[4578,5309],[15971,2376],[18702,15464]]
 CV_coords = [15024,9170]
 
 channels = ['C00','C01','C02','C03']
+
+#%%
 
 # size the array
 os.chdir(organelle_dir)
@@ -62,16 +64,17 @@ asinus_maxproj = np.zeros([5,np.size(sample_asinus,0),np.size(sample_asinus,1)],
 
 # get DAPI channel 
 os.chdir(nuclei_dir)
-# preallocate zstack for channel
-zstack = np.zeros([n_zslices,np.size(sample_asinus,0),np.size(sample_asinus,1)],dtype='uint8')
-
-# iterate through and gather each z slice for channel
-for i in range(n_zslices):
-    asinus_slice = Image.open(os.listdir()[i])
-    asinus,box = dispCrop(asinus_slice,CV_coords,PV_coords[asinusNum])
-    zstack[i] = asinus
-
-asinus_maxproj[1] = np.max(zstack,axis=0)
+for file in os.listdir():
+    # preallocate zstack for channel
+    zstack = np.zeros([n_zslices,np.size(sample_asinus,0),np.size(sample_asinus,1)],dtype='uint8')
+    
+    # iterate through and gather each z slice for channel
+    for i in range(n_zslices):
+        asinus_slice = Image.open(file)
+        asinus,box = dispCrop(asinus_slice,CV_coords,PV_coords[asinusNum])
+        zstack[i] = asinus
+    
+    asinus_maxproj[1] = np.max(zstack,axis=0)
 
 # get all other channels 
 os.chdir(organelle_dir)
