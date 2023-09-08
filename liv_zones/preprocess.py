@@ -14,7 +14,7 @@ from liv_zones import organelle_model as org_models
 # Always define save path not including the last /
 
 
-def preprocess(image_path, save_path, feature_list=None):
+def preprocessing(image_path, save_path, feature_list=None):
     # function to run segmentation of all organelles and get all
     # distance transforms needed for post_processing
 
@@ -27,22 +27,28 @@ def preprocess(image_path, save_path, feature_list=None):
         print("segmenting cells")
         cell_model = org_models.Organelle_Model("cell")
         cell_mask = cell_model.segment(
-            img_path=image_path, channel=0, save=True, save_path="../test_set/"
+            img_path=image_path, channel=0, save=True, save_path=save_path
         )
 
     if "mito" in features:
         print("segmenting mitos")
         mito_model = org_models.Organelle_Model("mito")
         mito_mask = mito_model.segment(
-            img_path=image_path, channel=1, save=True, save_path="../test_set/"
+            img_path=image_path, channel=1, save=True, save_path=save_path
         )
 
     if "lipid" in features:
         print("segmenting lipid droplets")
         lipid_model = org_models.Organelle_Model("lipid_droplet")
         lipid_mask = lipid_model.segment(
-            img_path=image_path, channel=2, save=True, save_path="../test_set/"
+            img_path=image_path, channel=2, save=True, save_path=save_path
         )
+        
+    if "perox" in features:
+        print('segmenting peroxisomes')
+        peroxisome_model = org_models.Organelle_Model("peroxisome")
+        peroxisome_mask = peroxisome_model.segment(
+            img_path=image_path, channel=3, save=True, save_path=save_path)
 
     if "cv" in features:
         print("calculating distance to central vein")
@@ -71,6 +77,7 @@ def file_check(path):
         "cell_mask.npy",
         "mito_mask.npy",
         "lipid_droplet_mask.npy",
+        "peroxisome_mask.npy",
         "cv_distance.npy",
         "pv_distance.npy",
         "boundry_distance.npy",

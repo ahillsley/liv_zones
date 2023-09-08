@@ -22,6 +22,10 @@ class Organelle_Model:
             self.pretrained_model = models.CellposeModel(
                 pretrained_model="models/mito_model"
             )
+        
+        if self.model_type == "peroxisome":
+            self.pretrained_model = models.CellposeModel(
+                pretrained_model='models/mito_model')
 
     def segment(self, img_path, channel, save=True, save_path=""):
 

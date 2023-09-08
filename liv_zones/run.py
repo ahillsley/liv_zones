@@ -32,6 +32,7 @@ feature_list = [
     'cell_mask',
     'mito_mask',
     'lipid_mask',
+    'peroxisome_mask',
     'cv_distance',
     'pv_distance',
     'boundry_distance'
@@ -44,6 +45,7 @@ organelle_features = False
 organelle_list = [
     'mitochondria',
     'lipid_droplets',
+    'peroxisomes'
     ]
 
 # Do you want to calculate average features per cell?
