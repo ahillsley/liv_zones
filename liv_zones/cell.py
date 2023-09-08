@@ -82,14 +82,30 @@ peroxisome_properties = [
     "type_3_peroxisome_dist_from_edge",
 ]
 
-property_list = mito_properties + lipid_droplet_properties + peroxisome_properties
 
-
-def cell_features(path, scale):
-
-    lipid_props = pd.read_csv(f"{path}/lipid_droplet_properties.csv")
-    mito_props = pd.read_csv(f"{path}/mitochondria_properties.csv")
-    peroxisome_props = pd.read_csv(f"{path}/peroxisome_properties.csv")
+def cell_features(
+        path,
+        scale):
+    
+    property_list = []
+    
+    try:
+        mito_props = pd.read_csv(f"{path}/mitochondria_properties.csv")
+        property_list += mito_properties
+    except:
+        mito_props = None
+        
+    try:
+        lipid_props = pd.read_csv(f"{path}/lipid_droplet_properties.csv")
+        property_list += lipid_droplet_properties
+    except:
+        lipid_props = None
+    
+    try:
+        peroxisome_props = pd.read_csv(f"{path}/peroxisome_properties.csv")
+        property_list +=peroxisome_properties
+    except:
+        peroxisome_props = None
 
     masks = org.Masks(path)
 
@@ -100,6 +116,7 @@ def cell_features(path, scale):
         save_path=path,
         masks=masks,
         scale=scale,
+        properties_list=property_list
     )
 
 
@@ -110,7 +127,7 @@ def cell_props(
     save_path,
     masks,
     scale,
-    properties_list=property_list,
+    properties_list,
     save=True,
 ):
 
@@ -137,179 +154,184 @@ def cell_props(
     for cell in cell_props["label"]:
         index = cell - 1
         organelles.index = index
-        organelles.single_cell_mitos = mito_props[mito_props["cell_id"] == cell]
-        organelles.single_cell_lipid_droplets = lipid_props[
-            lipid_props["cell_id"] == cell
-        ]
-        organelles.single_cell_peroxisomes = peroxisome_props[peroxisome_props["cell_id"] == cell]
 
         # Mitochondria Properties
         # -----------------------
-        cell_props["mito_density"][index] = organelles.density("mito")
-        cell_props["mito_avg_area"][index] = organelles.avg_area("mito")
-        cell_props["mito_percent_total_area"][index] = organelles.percent_total_area(
-            "mito"
-        )
-        cell_props["mito_aspect_ratio"][index] = organelles.aspect_ratio("mito")
-        cell_props["mito_solidity"][index] = organelles.solidity("mito")
-        cell_props["mito_distance_from_edge"][index] = organelles.distance_from_edge(
-            "mito"
-        )
-
-        cell_props["type_1_mito_density"][index] = organelles.type_density("mito", 1)
-        cell_props["type_2_mito_density"][index] = organelles.type_density("mito", 2)
-        cell_props["type_3_mito_density"][index] = organelles.type_density("mito", 3)
-
-        cell_props["type_1_mito_avg_area"][index] = organelles.type_avg_area("mito", 1)
-        cell_props["type_2_mito_avg_area"][index] = organelles.type_avg_area("mito", 2)
-        cell_props["type_3_mito_avg_area"][index] = organelles.type_avg_area("mito", 3)
-
-        cell_props["type_1_mito_avg_aspect_ratio"][
-            index
-        ] = organelles.type_aspect_ratio("mito", 1)
-        cell_props["type_2_mito_avg_aspect_ratio"][
-            index
-        ] = organelles.type_aspect_ratio("mito", 2)
-        cell_props["type_3_mito_avg_aspect_ratio"][
-            index
-        ] = organelles.type_aspect_ratio("mito", 3)
-
-        cell_props["type_1_mito_percent_total_area"][
-            index
-        ] = organelles.type_percent_total_area("mito", 1)
-        cell_props["type_2_mito_percent_total_area"][
-            index
-        ] = organelles.type_percent_total_area("mito", 2)
-        cell_props["type_3_mito_percent_total_area"][
-            index
-        ] = organelles.type_percent_total_area("mito", 3)
-
-        cell_props["percent_type_1_mito"][index] = organelles.type_percent_organelles(
-            "mito", 1
-        )
-        cell_props["percent_type_2_mito"][index] = organelles.type_percent_organelles(
-            "mito", 2
-        )
-        cell_props["percent_type_3_mito"][index] = organelles.type_percent_organelles(
-            "mito", 3
-        )
-
-        cell_props["type_1_mito_dist_from_edge"][
-            index
-        ] = organelles.type_dist_from_edge("mito", 1)
-        cell_props["type_2_mito_dist_from_edge"][
-            index
-        ] = organelles.type_dist_from_edge("mito", 2)
-        cell_props["type_3_mito_dist_from_edge"][
-            index
-        ] = organelles.type_dist_from_edge("mito", 3)
+        if mito_props is not None:
+            organelles.single_cell_mitos = mito_props[mito_props["cell_id"] == cell]
+            
+            cell_props["mito_density"][index] = organelles.density("mito")
+            cell_props["mito_avg_area"][index] = organelles.avg_area("mito")
+            cell_props["mito_percent_total_area"][index] = organelles.percent_total_area(
+                "mito"
+            )
+            cell_props["mito_aspect_ratio"][index] = organelles.aspect_ratio("mito")
+            cell_props["mito_solidity"][index] = organelles.solidity("mito")
+            cell_props["mito_distance_from_edge"][index] = organelles.distance_from_edge(
+                "mito"
+            )
+    
+            cell_props["type_1_mito_density"][index] = organelles.type_density("mito", 1)
+            cell_props["type_2_mito_density"][index] = organelles.type_density("mito", 2)
+            cell_props["type_3_mito_density"][index] = organelles.type_density("mito", 3)
+    
+            cell_props["type_1_mito_avg_area"][index] = organelles.type_avg_area("mito", 1)
+            cell_props["type_2_mito_avg_area"][index] = organelles.type_avg_area("mito", 2)
+            cell_props["type_3_mito_avg_area"][index] = organelles.type_avg_area("mito", 3)
+    
+            cell_props["type_1_mito_avg_aspect_ratio"][
+                index
+            ] = organelles.type_aspect_ratio("mito", 1)
+            cell_props["type_2_mito_avg_aspect_ratio"][
+                index
+            ] = organelles.type_aspect_ratio("mito", 2)
+            cell_props["type_3_mito_avg_aspect_ratio"][
+                index
+            ] = organelles.type_aspect_ratio("mito", 3)
+    
+            cell_props["type_1_mito_percent_total_area"][
+                index
+            ] = organelles.type_percent_total_area("mito", 1)
+            cell_props["type_2_mito_percent_total_area"][
+                index
+            ] = organelles.type_percent_total_area("mito", 2)
+            cell_props["type_3_mito_percent_total_area"][
+                index
+            ] = organelles.type_percent_total_area("mito", 3)
+    
+            cell_props["percent_type_1_mito"][index] = organelles.type_percent_organelles(
+                "mito", 1
+            )
+            cell_props["percent_type_2_mito"][index] = organelles.type_percent_organelles(
+                "mito", 2
+            )
+            cell_props["percent_type_3_mito"][index] = organelles.type_percent_organelles(
+                "mito", 3
+            )
+    
+            cell_props["type_1_mito_dist_from_edge"][
+                index
+            ] = organelles.type_dist_from_edge("mito", 1)
+            cell_props["type_2_mito_dist_from_edge"][
+                index
+            ] = organelles.type_dist_from_edge("mito", 2)
+            cell_props["type_3_mito_dist_from_edge"][
+                index
+            ] = organelles.type_dist_from_edge("mito", 3)
 
         # Lipid Droplet Properties
         # ------------------------
-        cell_props["ld_density"][index] = organelles.density("ld")
-        cell_props["ld_avg_area"][index] = organelles.avg_area("ld")
-        cell_props["ld_percent_total_area"][index] = organelles.percent_total_area("ld")
-        cell_props["ld_distance_from_edge"][index] = organelles.distance_from_edge("ld")
-
-        cell_props["type_1_ld_density"][index] = organelles.type_density("ld", 1)
-        cell_props["type_2_ld_density"][index] = organelles.type_density("ld", 2)
-        cell_props["type_3_ld_density"][index] = organelles.type_density("ld", 3)
-
-        cell_props["type_1_ld_avg_area"][index] = organelles.type_avg_area("ld", 1)
-        cell_props["type_2_ld_avg_area"][index] = organelles.type_avg_area("ld", 2)
-        cell_props["type_3_ld_avg_area"][index] = organelles.type_avg_area("ld", 3)
-
-        cell_props["type_1_ld_percent_total_area"][
-            index
-        ] = organelles.type_percent_total_area("ld", 1)
-        cell_props["type_2_ld_percent_total_area"][
-            index
-        ] = organelles.type_percent_total_area("ld", 2)
-        cell_props["type_3_ld_percent_total_area"][
-            index
-        ] = organelles.type_percent_total_area("ld", 3)
-
-        cell_props["percent_type_1_ld"][index] = organelles.type_percent_organelles(
-            "ld", 1
-        )
-        cell_props["percent_type_2_ld"][index] = organelles.type_percent_organelles(
-            "ld", 2
-        )
-        cell_props["percent_type_3_ld"][index] = organelles.type_percent_organelles(
-            "ld", 3
-        )
-
-        cell_props["type_1_ld_dist_from_edge"][index] = organelles.type_dist_from_edge(
-            "ld", 1
-        )
-        cell_props["type_2_ld_dist_from_edge"][index] = organelles.type_dist_from_edge(
-            "ld", 2
-        )
-        cell_props["type_3_ld_dist_from_edge"][index] = organelles.type_dist_from_edge(
-            "ld", 3
-        )
+        if lipid_props is not None:
+            organelles.single_cell_lipid_droplets = lipid_props[
+                lipid_props["cell_id"] == cell
+            ]
+            
+            cell_props["ld_density"][index] = organelles.density("ld")
+            cell_props["ld_avg_area"][index] = organelles.avg_area("ld")
+            cell_props["ld_percent_total_area"][index] = organelles.percent_total_area("ld")
+            cell_props["ld_distance_from_edge"][index] = organelles.distance_from_edge("ld")
+    
+            cell_props["type_1_ld_density"][index] = organelles.type_density("ld", 1)
+            cell_props["type_2_ld_density"][index] = organelles.type_density("ld", 2)
+            cell_props["type_3_ld_density"][index] = organelles.type_density("ld", 3)
+    
+            cell_props["type_1_ld_avg_area"][index] = organelles.type_avg_area("ld", 1)
+            cell_props["type_2_ld_avg_area"][index] = organelles.type_avg_area("ld", 2)
+            cell_props["type_3_ld_avg_area"][index] = organelles.type_avg_area("ld", 3)
+    
+            cell_props["type_1_ld_percent_total_area"][
+                index
+            ] = organelles.type_percent_total_area("ld", 1)
+            cell_props["type_2_ld_percent_total_area"][
+                index
+            ] = organelles.type_percent_total_area("ld", 2)
+            cell_props["type_3_ld_percent_total_area"][
+                index
+            ] = organelles.type_percent_total_area("ld", 3)
+    
+            cell_props["percent_type_1_ld"][index] = organelles.type_percent_organelles(
+                "ld", 1
+            )
+            cell_props["percent_type_2_ld"][index] = organelles.type_percent_organelles(
+                "ld", 2
+            )
+            cell_props["percent_type_3_ld"][index] = organelles.type_percent_organelles(
+                "ld", 3
+            )
+    
+            cell_props["type_1_ld_dist_from_edge"][index] = organelles.type_dist_from_edge(
+                "ld", 1
+            )
+            cell_props["type_2_ld_dist_from_edge"][index] = organelles.type_dist_from_edge(
+                "ld", 2
+            )
+            cell_props["type_3_ld_dist_from_edge"][index] = organelles.type_dist_from_edge(
+                "ld", 3
+            )
     
         # Peroxisome Properties
         # ---------------------
-        
-        cell_props["peroxisome_density"][index] = organelles.density("peroxi")
-        cell_props["peroxisome_avg_area"][index] = organelles.avg_area("peroxi")
-        cell_props["peroxisome_percent_total_area"][index] = organelles.percent_total_area(
-            "peroxi"
-        )
-        cell_props["peroxisome_aspect_ratio"][index] = organelles.aspect_ratio("peroxi")
-        cell_props["peroxisome_solidity"][index] = organelles.solidity("peroxi")
-        cell_props["peroxisome_distance_from_edge"][index] = organelles.distance_from_edge(
-            "peroxi"
-        )
-
-        cell_props["type_1_peroxisome_density"][index] = organelles.type_density("peroxi", 1)
-        cell_props["type_2_peroxisome_density"][index] = organelles.type_density("peroxi", 2)
-        cell_props["type_3_peroxisome_density"][index] = organelles.type_density("peroxi", 3)
-
-        cell_props["type_1_peroxisome_avg_area"][index] = organelles.type_avg_area("peroxi", 1)
-        cell_props["type_2_peroxisome_avg_area"][index] = organelles.type_avg_area("peroxi", 2)
-        cell_props["type_3_peroxisome_avg_area"][index] = organelles.type_avg_area("peroxi", 3)
-
-        cell_props["type_1_peroxisome_avg_aspect_ratio"][
-            index
-        ] = organelles.type_aspect_ratio("peroxi", 1)
-        cell_props["type_2_peroxisome_avg_aspect_ratio"][
-            index
-        ] = organelles.type_aspect_ratio("peroxi", 2)
-        cell_props["type_3_peroxisome_avg_aspect_ratio"][
-            index
-        ] = organelles.type_aspect_ratio("peroxi", 3)
-
-        cell_props["type_1_peroxisome_percent_total_area"][
-            index
-        ] = organelles.type_percent_total_area("peroxi", 1)
-        cell_props["type_2_peroxisome_percent_total_area"][
-            index
-        ] = organelles.type_percent_total_area("peroxi", 2)
-        cell_props["type_3_peroxisome_percent_total_area"][
-            index
-        ] = organelles.type_percent_total_area("peroxi", 3)
-
-        cell_props["percent_type_1_peroxisome"][index] = organelles.type_percent_organelles(
-            "peroxi", 1
-        )
-        cell_props["percent_type_2_peroxisome"][index] = organelles.type_percent_organelles(
-            "peroxi", 2
-        )
-        cell_props["percent_type_3_peroxisome"][index] = organelles.type_percent_organelles(
-            "peroxi", 3
-        )
-
-        cell_props["type_1_peroxisome_dist_from_edge"][
-            index
-        ] = organelles.type_dist_from_edge("peroxi", 1)
-        cell_props["type_2_peroxisome_dist_from_edge"][
-            index
-        ] = organelles.type_dist_from_edge("peroxi", 2)
-        cell_props["type_3_peroxisome_dist_from_edge"][
-            index
-        ] = organelles.type_dist_from_edge("peroxi", 3)
+        if peroxisome_props is not None:
+            organelles.single_cell_peroxisomes = peroxisome_props[peroxisome_props["cell_id"] == cell]
+            
+            cell_props["peroxisome_density"][index] = organelles.density("peroxi")
+            cell_props["peroxisome_avg_area"][index] = organelles.avg_area("peroxi")
+            cell_props["peroxisome_percent_total_area"][index] = organelles.percent_total_area(
+                "peroxi"
+            )
+            cell_props["peroxisome_aspect_ratio"][index] = organelles.aspect_ratio("peroxi")
+            cell_props["peroxisome_solidity"][index] = organelles.solidity("peroxi")
+            cell_props["peroxisome_distance_from_edge"][index] = organelles.distance_from_edge(
+                "peroxi"
+            )
+    
+            cell_props["type_1_peroxisome_density"][index] = organelles.type_density("peroxi", 1)
+            cell_props["type_2_peroxisome_density"][index] = organelles.type_density("peroxi", 2)
+            cell_props["type_3_peroxisome_density"][index] = organelles.type_density("peroxi", 3)
+    
+            cell_props["type_1_peroxisome_avg_area"][index] = organelles.type_avg_area("peroxi", 1)
+            cell_props["type_2_peroxisome_avg_area"][index] = organelles.type_avg_area("peroxi", 2)
+            cell_props["type_3_peroxisome_avg_area"][index] = organelles.type_avg_area("peroxi", 3)
+    
+            cell_props["type_1_peroxisome_avg_aspect_ratio"][
+                index
+            ] = organelles.type_aspect_ratio("peroxi", 1)
+            cell_props["type_2_peroxisome_avg_aspect_ratio"][
+                index
+            ] = organelles.type_aspect_ratio("peroxi", 2)
+            cell_props["type_3_peroxisome_avg_aspect_ratio"][
+                index
+            ] = organelles.type_aspect_ratio("peroxi", 3)
+    
+            cell_props["type_1_peroxisome_percent_total_area"][
+                index
+            ] = organelles.type_percent_total_area("peroxi", 1)
+            cell_props["type_2_peroxisome_percent_total_area"][
+                index
+            ] = organelles.type_percent_total_area("peroxi", 2)
+            cell_props["type_3_peroxisome_percent_total_area"][
+                index
+            ] = organelles.type_percent_total_area("peroxi", 3)
+    
+            cell_props["percent_type_1_peroxisome"][index] = organelles.type_percent_organelles(
+                "peroxi", 1
+            )
+            cell_props["percent_type_2_peroxisome"][index] = organelles.type_percent_organelles(
+                "peroxi", 2
+            )
+            cell_props["percent_type_3_peroxisome"][index] = organelles.type_percent_organelles(
+                "peroxi", 3
+            )
+    
+            cell_props["type_1_peroxisome_dist_from_edge"][
+                index
+            ] = organelles.type_dist_from_edge("peroxi", 1)
+            cell_props["type_2_peroxisome_dist_from_edge"][
+                index
+            ] = organelles.type_dist_from_edge("peroxi", 2)
+            cell_props["type_3_peroxisome_dist_from_edge"][
+                index
+            ] = organelles.type_dist_from_edge("peroxi", 3)
 
     if save is True:
         cell_props.to_csv(f"{save_path}/average_properties_per_cell.csv")
