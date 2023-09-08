@@ -38,6 +38,13 @@ feature_list = [
     'boundry_distance'
     ]
 
+channels = {'actin': 0,
+        'nuclei': 1,
+        'mito': 2,
+        'lipid': 3,
+        'peroxi': 4
+        }
+
 # Do you want to extract individual organelle features?
 organelle_features = False
 
@@ -80,7 +87,7 @@ if __name__ == "__main__":
 
         # pre-processing
         if run_preprocessing is True:
-            pre.preprocess(image_path, save_path, feature_list)
+            pre.preprocessing(image_path, save_path, channels, feature_list)
 
         else:
             pre.file_check(save_path)
