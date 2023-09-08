@@ -14,7 +14,7 @@ from liv_zones import organelle_model as org_models
 # Always define save path not including the last /
 
 
-def preprocess(image_path, save_path, feature_list=None):
+def preprocessing(image_path, save_path, feature_list=None):
     # function to run segmentation of all organelles and get all
     # distance transforms needed for post_processing
 
