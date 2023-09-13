@@ -25,30 +25,53 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
 
     if "cell" in features:
         print("segmenting cells")
-        cell_model = org_models.Organelle_Model("cell")
+        cell_model = org_models.OrganelleModel("cell")
         cell_mask = cell_model.segment(
-            img_path=image_path, channel=channels['actin'], save=True, save_path=save_path
+            img_path=image_path,
+            channel=channels["actin"],
+            save=True,
+            save_path=save_path,
         )
 
     if "mito" in features:
         print("segmenting mitos")
-        mito_model = org_models.Organelle_Model("mito")
+        mito_model = org_models.OrganelleModel("mito")
         mito_mask = mito_model.segment(
-            img_path=image_path, channel=channels['mito'], save=True, save_path=save_path
+            img_path=image_path,
+            channel=channels["mito"],
+            save=True,
+            save_path=save_path,
         )
 
     if "lipid" in features:
         print("segmenting lipid droplets")
-        lipid_model = org_models.Organelle_Model("lipid_droplet")
+        lipid_model = org_models.OrganelleModel("lipid_droplet")
         lipid_mask = lipid_model.segment(
-            img_path=image_path, channel=channels['lipid'], save=True, save_path=save_path
+            img_path=image_path,
+            channel=channels["lipid"],
+            save=True,
+            save_path=save_path,
         )
-        
+
     if "perox" in features:
-        print('segmenting peroxisomes')
-        peroxisome_model = org_models.Organelle_Model("peroxisome")
+        print("segmenting peroxisomes")
+        peroxisome_model = org_models.OrganelleModel("peroxisome")
         peroxisome_mask = peroxisome_model.segment(
-            img_path=image_path, channel=channels['peroxi'], save=True, save_path=save_path)
+            img_path=image_path,
+            channel=channels["peroxi"],
+            save=True,
+            save_path=save_path,
+        )
+
+    if "nuclei" in features:
+        print("segmenting nuclei")
+        nuclei_model = org_models.OrganelleModel("nuclei")
+        nuclei_mask = nuclei_model.segment(
+            img_path=image_path,
+            channel=channels["nuclei"],
+            save=True,
+            save_path=save_path,
+        )
 
     if "cv" in features:
         print("calculating distance to central vein")
@@ -60,9 +83,7 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
 
     if "bound" in features:
         print("calculating distance to cell boundry")
-        cell_edge_distance(
-            save_path,
-        )
+        cell_edge_distance(save_path)
 
     return
 
@@ -78,6 +99,7 @@ def file_check(path):
         "mito_mask.npy",
         "lipid_droplet_mask.npy",
         "peroxisome_mask.npy",
+        "nuclei_mask.npy",
         "cv_distance.npy",
         "pv_distance.npy",
         "boundry_distance.npy",

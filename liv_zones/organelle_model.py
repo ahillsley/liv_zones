@@ -4,7 +4,7 @@ from cellpose import models, utils
 from cellpose.io import imread
 
 
-class Organelle_Model:
+class OrganelleModel:
     def __init__(self, model_type):
         self.model_type = model_type
 
@@ -22,14 +22,16 @@ class Organelle_Model:
             self.pretrained_model = models.CellposeModel(
                 pretrained_model="models/mito_model"
             )
-        
+
         if self.model_type == "peroxisome":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model='models/mito_model')
-            
-        if self.model.type == 'nuclei':
+                pretrained_model="models/mito_model"
+            )
+
+        if self.model.type == "nuclei":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model='models/nuclei_model')
+                pretrained_model="models/nuclei_model"
+            )
 
     def segment(self, img_path, channel, save=True, save_path=""):
 
