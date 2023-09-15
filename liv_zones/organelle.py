@@ -152,7 +152,7 @@ def lipid_droplet_properties(
     return ld_props
 
 def peroxisome_properties(
-    peroxisome_mask, masks, save_path, scale, mito_aspect_split, save=True  # pixels / micron
+    peroxisome_mask, masks, save_path, scale, peroxisome_aspect_split, save=True  # pixels / micron
 ):
 
     # returns props in pixel units
@@ -200,6 +200,53 @@ def peroxisome_properties(
         peroxi_props.to_csv(f"{save_path}/peroxisome_properties.csv")
 
     return peroxi_props
+
+def nuclei_props(
+        nuclei_mask,
+        masks,
+        save_path,
+        scale,
+        save=True):
+    
+    # returns props in pixel units
+    nuclei_props_dict = regionprops_table(
+        nuclei_mask,
+        properties=(
+            "label",
+            "area",
+            "perimeter",
+            "centroid",
+            "axis_major_length",
+            "axis_minor_length",
+        ),
+    )
+    
+    nuclei_props = pd.DataFrame.from_dict(nuclei_props_dict)
+
+    # convert from pixels to microns
+    nuclei_props["area"] = nuclei_props["area"] / (scale**2)
+    nuclei_props["perimeter"] = nuclei_props["perimeter"] / scale
+    nuclei_props["axis_major_length"] = nuclei_props["axis_major_length"] / scale
+    nuclei_props["axis_minor_length"] = nuclei_props["axis_minor_length"] / scale
+
+    nuclei_props["cell_id"] = map_to_cell(nuclei_props, masks.cell_mask)
+    nuclei_props["aspect_ratio"] = (
+        nuclei_props["axis_major_length"] / nuclei_props["axis_minor_length"]
+    )
+
+    # use formula to calc boundry to cell edge
+    nuclei_props["boundry_dist"] = map_to_cell(nuclei_props, masks.cell_edge_distance)
+
+    # use new ascini distance measure
+    # portal vein = 1, central vein = -1
+    nuclei_props["ascini_position"] = ascini_position(
+        nuclei_props, masks.cv_distance, masks.pv_distance
+    )
+    
+    if save is True:
+        nuclei_props.to_csv(f"{save_path}/nuclei_properties.csv")
+
+    return nuclei_props
 
 
 def map_to_cell(props, mask):
