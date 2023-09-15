@@ -24,7 +24,7 @@ def organelle_features(
     scale,
     mito_aspect_split=mito_aspect_split,
     ld_area_split=ld_area_split,
-    organelle_list=["mitos", "lipid_droplets", "peroxisomes"],
+    organelle_list=["mitos", "lipid_droplets", "peroxisomes", "nuclei"],
 ):
 
     cell_level_masks = Masks(path)
@@ -45,6 +45,12 @@ def organelle_features(
         peroxisome_mask = np.load(f"{path}/peroxisome_mask.npy")
         peroxisome_properties(
             peroxisome_mask, cell_level_masks, path, scale, peroxisome_aspect_split
+        )
+
+    if "nuclei" in organelles:
+        nuclei_mask = np.load(f"{path}/nuclei_mask.npy")
+        nuclei_properties(
+                nuclei_mask, cell_level_masks, path, scale
         )
 
     return
@@ -209,7 +215,7 @@ def peroxisome_properties(
     return peroxi_props
 
 
-def nuclei_props(nuclei_mask, masks, save_path, scale, save=True):
+def nuclei_properties(nuclei_mask, masks, save_path, scale, save=True):
 
     # returns props in pixel units
     nuclei_props_dict = regionprops_table(
