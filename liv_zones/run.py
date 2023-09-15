@@ -2,20 +2,22 @@ from liv_zones import preprocess as pre
 from liv_zones import organelle as org
 from liv_zones import cell as c
 from liv_zones.ascini import plot_properties, plot_cell, plot_ascinus_annotated
-
+import time
 
 """ 
 Define scale and file paths
 """
 
-scale = 14.4024  # pixels per micron
+scale = 22.187  # pixels per micron
 
 
 image_paths = [
-    "../test_set/0-Actin_Dendra_LD-1_Merge_WD_M1_12pm_dendra2_actin647_lipitox594.lif - TileScan 2_Merged-2.tif"
+    "../../images/asinus_0/acinus0_z5_full.tif"
 ]
 
-save_paths = ["../test_set"]
+save_paths = [
+    "../../images/asinus_0"
+    ]
 
 
 """
@@ -31,6 +33,7 @@ feature_list = [
     "mito_mask",
     "lipid_mask",
     "peroxisome_mask",
+    "nuclei_mask",
     "cv_distance",
     "pv_distance",
     "boundry_distance",
@@ -39,10 +42,10 @@ feature_list = [
 channels = {"actin": 0, "nuclei": 1, "mito": 2, "lipid": 3, "peroxi": 4}
 
 # Do you want to extract individual organelle features?
-organelle_features = False
+organelle_features = True
 
 # comment out any organelles you dont want re-calculated
-organelle_list = ["mitochondria", "lipid_droplets", "peroxisomes"]
+organelle_list = ["mitochondria", "lipid_droplets", "peroxisomes", "nuclei"]
 
 # Do you want to calculate average features per cell?
 cell_features = False
@@ -66,7 +69,7 @@ Run (don't change anything below)
 """
 
 if __name__ == "__main__":
-
+    start = time.time()
     for image_path, save_path in zip(image_paths, save_paths):
         print("processing image:")
         print(f"        {image_path}")
@@ -104,3 +107,5 @@ if __name__ == "__main__":
 
         if show_individual_cell is True:
             plot_cell(image_path, save_path, cell_num=cell_number)
+        
+        print(f'ran in {time.time()-start:.3f}s')
