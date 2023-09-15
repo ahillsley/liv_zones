@@ -15,9 +15,7 @@ image_paths = [
     "../test_set/0-Actin_Dendra_LD-1_Merge_WD_M1_12pm_dendra2_actin647_lipitox594.lif - TileScan 2_Merged-2.tif"
 ]
 
-save_paths = [
-    "../test_set"
-    ]
+save_paths = ["../test_set"]
 
 
 """
@@ -29,31 +27,22 @@ run_preprocessing = False
 
 # comment out any features that you don't want re-calculated
 feature_list = [
-    'cell_mask',
-    'mito_mask',
-    'lipid_mask',
-    'peroxisome_mask',
-    'cv_distance',
-    'pv_distance',
-    'boundry_distance'
-    ]
+    "cell_mask",
+    "mito_mask",
+    "lipid_mask",
+    "peroxisome_mask",
+    "cv_distance",
+    "pv_distance",
+    "boundry_distance",
+]
 
-channels = {'actin': 0,
-        'nuclei': 1,
-        'mito': 2,
-        'lipid': 3,
-        'peroxi': 4
-        }
+channels = {"actin": 0, "nuclei": 1, "mito": 2, "lipid": 3, "peroxi": 4}
 
 # Do you want to extract individual organelle features?
 organelle_features = False
 
 # comment out any organelles you dont want re-calculated
-organelle_list = [
-    'mitochondria',
-    'lipid_droplets',
-    'peroxisomes'
-    ]
+organelle_list = ["mitochondria", "lipid_droplets", "peroxisomes"]
 
 # Do you want to calculate average features per cell?
 cell_features = False
@@ -97,9 +86,7 @@ if __name__ == "__main__":
 
             print("extracting individual organelle features")
             org.organelle_features(
-                path=save_path,
-                scale=scale,
-                organelle_list=organelle_list,
+                path=save_path, scale=scale, organelle_list=organelle_list,
             )
 
         # extract average features per cell
@@ -107,13 +94,13 @@ if __name__ == "__main__":
 
             print("averaging features per cell")
             c.cell_features(save_path, scale=scale)
-            
+
         # visualizing the results
         if plot_labeled_ascinus is True:
             plot_ascinus_annotated(save_path)
-        
+
         if plot_props is True:
             plot_properties(save_path)
-            
+
         if show_individual_cell is True:
             plot_cell(image_path, save_path, cell_num=cell_number)
