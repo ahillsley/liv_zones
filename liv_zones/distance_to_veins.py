@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from skimage.draw import ellipse
 from scipy import optimize
 from scipy.ndimage import distance_transform_edt
-import typer
+#import typer
 
 
 def get_veins(data):
@@ -91,5 +91,6 @@ def main(input_file, output_dir):
 
 
 if __name__ == "__main__":
-    typer.run(main)
+    #typer.run(main)
+    pass
 

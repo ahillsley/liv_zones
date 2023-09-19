@@ -9,10 +9,10 @@ from cellpose import models, utils
 from cellpose.io import imread
 
 from liv_zones import organelle_model as org_models
+from liv_zones.distance_to_veins import main as vein_dist
 
 
 # Always define save path not including the last /
-
 
 def preprocessing(image_path, save_path, channels, feature_list=None):
     # function to run segmentation of all organelles and get all
@@ -73,16 +73,12 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
             save_path=save_path,
         )
 
-    if "cv" in features:
-        print("calculating distance to central vein")
-        cv_distance = vein_distance(save_path, "c")
-
-    if "pv" in features:
-        print("calculating distance to the portal vein")
-        pv_distance = vein_distance(save_path, "p")
+    if "central" in features or "portal" in features:
+        print("calculating distance to central and portal veins")
+        vein_distance = vein_dist(f'{save_path}/cell_mask.npy', save_path)
 
     if "bound" in features:
-        print("calculating distance to cell boundry")
+        print("calculating distance to cell boundary")
         cell_edge_distance(save_path)
 
     return
