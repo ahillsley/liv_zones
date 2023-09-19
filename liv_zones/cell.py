@@ -66,7 +66,7 @@ peroxisome_properties = [
     "type_2_peroxisome_density",
     "type_3_peroxisome_density",
     "type_1_peroxisome_avg_area",
-    "type_2_mperoxisome_avg_area",
+    "type_2_peroxisome_avg_area",
     "type_3_peroxisome_avg_area",
     "type_1_peroxisome_avg_aspect_ratio",
     "type_2_peroxisome_avg_aspect_ratio",
@@ -512,7 +512,7 @@ class OrganelleFuncs:
 
         elif organelle == "peroxi":
             organelle_count = np.sum(
-                self.single_cell_peroxisomes[f"area_type_{org_type}"]
+                self.single_cell_peroxisomes[f"aspect_type_{org_type}"]
             )
 
         return organelle_count / self.cell_props["area"][self.index]
@@ -527,7 +527,7 @@ class OrganelleFuncs:
             return np.mean(self.single_cell_lipid_droplets["area"][subset])
 
         elif organelle == "peroxi":
-            subset = self.single_cell_peroxisomes[f"area_type_{org_type}"]
+            subset = self.single_cell_peroxisomes[f"aspect_type_{org_type}"]
             return np.mean(self.single_cell_peroxisomes["area"][subset])
 
     def type_aspect_ratio(self, organelle, org_type):
@@ -557,7 +557,7 @@ class OrganelleFuncs:
         elif organelle == "peroxi":
             organelle_area = np.sum(
                 self.single_cell_peroxisomes["area"][
-                    self.single_cell_peroxisomes[f"area_type_{org_type}"]
+                    self.single_cell_peroxisomes[f"aspect_type_{org_type}"]
                 ]
             )
 
@@ -575,7 +575,7 @@ class OrganelleFuncs:
             ) / len(self.single_cell_lipid_droplets)
 
         elif organelle == "peroxi":
-            return np.sum(self.single_cell_peroxisomes[f"area_type_{org_type}"]) / len(
+            return np.sum(self.single_cell_peroxisomes[f"aspect_type_{org_type}"]) / len(
                 self.single_cell_peroxisomes
             )
 
@@ -592,7 +592,7 @@ class OrganelleFuncs:
 
         elif organelle == "peroxi":
             subset = self.single_cell_peroxisomes[
-                self.single_cell_peroxisomes[f"area_type_{org_type}"]
+                self.single_cell_peroxisomes[f"aspect_type_{org_type}"]
             ]
 
         return dist_from_edge(self.cell_props.iloc[self.index], subset)

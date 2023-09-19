@@ -10,7 +10,7 @@ class OrganelleModel:
 
         if self.model_type == "cell":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="models/cell_model", gpu=True, device=torch.device("cuda")
+                pretrained_model="models/cell_model", device=torch.device("cuda")
             )
             self.flow = 0.4
             self.cell_prob = 0
@@ -18,7 +18,7 @@ class OrganelleModel:
 
         if self.model_type == "lipid_droplet":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="models/lipid_droplet_model", gpu=True, device=torch.device("cuda")
+                pretrained_model="models/lipid_droplet_model", device=torch.device("cuda")
             )
             self.flow = 0.3
             self.cell_prob = 0
@@ -26,7 +26,7 @@ class OrganelleModel:
 
         if self.model_type == "mito":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="models/mito_model", gpu=True, device=torch.device("cuda")
+                pretrained_model="models/mito_model", device=torch.device("cuda")
             )
             self.flow = 0
             self.cell_prob = -0.1
@@ -34,7 +34,7 @@ class OrganelleModel:
 
         if self.model_type == "peroxisome":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="models/peroxisome_model", gpu=True, device=torch.device("cuda")
+                pretrained_model="models/peroxisome_model", device=torch.device("cuda")
             )
             self.flow = 0
             self.cell_prob = -0.1
@@ -42,7 +42,7 @@ class OrganelleModel:
 
         if self.model_type == "nuclei":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="models/nuclei_model", gpu=True, device=torch.device("cuda")
+                pretrained_model="models/nuclei_model", device=torch.device("cuda")
             )
             self.flow = 0.4
             self.cell_prob = 0
@@ -57,8 +57,7 @@ class OrganelleModel:
             organelle_raw,
             flow_threshold=self.flow,
             cellprob_threshold=self.cell_prob,
-            diameter=self.diameter,
-            progress=True
+            diameter=self.diameter
         )
 
         if save is True:
