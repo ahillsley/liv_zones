@@ -13,12 +13,16 @@ scale = 22.187  # pixels per micron
 
 
 image_paths = [
-    "../../images/asinus_0/acinus0_z5_full.tif"
+    #"../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus0/stack0/acinus0_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus1/stack0/acinus1_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus2/stack0/acinus2_stack0.tif",
 ]
 
 save_paths = [
-    "../../images/asinus_0"
-    ]
+    #"../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus0/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus1/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus2/stack0",
+]
 
 
 """
@@ -26,7 +30,7 @@ Options on what to run
 """
 
 # Do you want to run the preprocessing?
-run_preprocessing = False
+run_preprocessing = True
 
 # comment out any features that you don't want re-calculated
 feature_list = [
@@ -49,7 +53,7 @@ organelle_features = True
 organelle_list = ["mitochondria", "lipid_droplets", "peroxisomes", "nuclei"]
 
 # Do you want to calculate average features per cell?
-cell_features = False
+cell_features = True
 
 # Do you want an image of the ascinus with each cell labeled?
 plot_labeled_ascinus = False
