@@ -96,9 +96,9 @@ def file_check(path):
         "lipid_droplet_mask.npy",
         "peroxisome_mask.npy",
         "nuclei_mask.npy",
-        "cv_distance.npy",
-        "pv_distance.npy",
-        "boundry_distance.npy",
+        "central_dist.npy",
+        "portal_dist.npy",
+        "boundary_dist.npy",
     ]
 
     missing = False
@@ -130,7 +130,7 @@ def cell_edge_distance(save_path):
     outlines = utils.masks_to_outlines(cell_mask)
     dist_transform = distance_transform_edt((outlines == False) * 1)
 
-    np.save(f"{save_path}/boundry_distance.npy", dist_transform)
+    np.save(f"{save_path}/boundary_dist.npy", dist_transform)
     return
 
 

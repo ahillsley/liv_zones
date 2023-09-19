@@ -34,9 +34,9 @@ feature_list = [
     "lipid_mask",
     "peroxisome_mask",
     "nuclei_mask",
-    "cv_distance",
-    "pv_distance",
-    "boundry_distance",
+    "central_dist",
+    #"portal_dist",
+    "boundary_distance",
 ]
 
 channels = {"actin": 0, "nuclei": 1, "mito": 2, "lipid": 3, "peroxi": 4}

@@ -14,9 +14,9 @@ peroxisome_aspect_split = (1, 2)  # completely made up, need to change
 class Masks:
     def __init__(self, path):
         self.cell_mask = np.load(f"{path}/cell_mask.npy")
-        self.cv_distance = np.load(f"{path}/cv_distance.npy")
-        self.pv_distance = np.load(f"{path}/pv_distance.npy")
-        self.cell_edge_distance = np.load(f"{path}/boundry_distance.npy")
+        self.cv_distance = np.load(f"{path}/central_dist.npy")
+        self.pv_distance = np.load(f"{path}/portal_dist.npy")
+        self.cell_edge_distance = np.load(f"{path}/boundary_dist.npy")
 
 
 def organelle_features(
