@@ -3,6 +3,7 @@ from liv_zones import organelle as org
 from liv_zones import cell as c
 from liv_zones.ascini import plot_properties, plot_cell, plot_ascinus_annotated
 import time
+import torch
 
 """ 
 Define scale and file paths
@@ -83,7 +84,8 @@ if __name__ == "__main__":
 
         else:
             pre.file_check(save_path)
-
+        
+        torch.cuda.empty_cache()
         # extract individual organelle features
         if organelle_features is True:
 
