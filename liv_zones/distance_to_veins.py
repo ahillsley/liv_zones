@@ -51,8 +51,8 @@ def fit_ellipses(data):
         # Make a binary mask of the object
         mask = (data == obj.label).astype(int)
         x0, y0 = obj.centroid
-        a = np.clip(obj.axis_major_length/10, a_min=100, a_max=None)
-        b = np.clip(obj.axis_minor_length/10, a_min=100, a_max=None)
+        a = np.clip(obj.axis_major_length/5, a_min=100, a_max=None)
+        b = np.clip(obj.axis_minor_length/5, a_min=100, a_max=None)
         theta = 0  # obj.orientation
         # Optimize the cost function
         x0, y0, a, b, theta = optimize.fmin(
