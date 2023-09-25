@@ -3,6 +3,7 @@
 import os, sys, pickle, numpy as np
 from PIL import Image 
 Image.MAX_IMAGE_PIXELS = 500000000
+from scipy import ndimage
 from matplotlib import patches
 import tifffile
 sys.path.append('//groups/sgro/sgrolab/mark/liver_proj/diagonal-crop')
@@ -37,11 +38,12 @@ def dispCrop(img,CV_coords,PV_coords):
     return np.array(cropped_im),box
 
 
-lobule_dir = '//groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule3'
+lobule_dir = '//groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule2'
 organelle_dir = lobule_dir + '/Mito_Perox_LD_Actin'
 nuclei_dir = lobule_dir + '/DAPI'
 
-n_zslices = 10
+nSlices = 5
+nStacks = 10
 pixels_per_um = 22.1870
 
 os.chdir(lobule_dir)
@@ -51,63 +53,77 @@ with open('vein_coords.pickle','rb') as f:
 channels = ['C00','C01','C02','C03']
 
 for asinusNum in range(3):
+    
+    os.chdir(lobule_dir)
+    acinus_dir = lobule_dir + '/acinus' + str(asinusNum)
+    os.mkdir(acinus_dir)
+    
+    for stackNum in range(nStacks):    
 
-    # size the array
-    os.chdir(organelle_dir)
-    sample_asinus_slice = Image.open(os.listdir()[0])
-    sample_asinus,sample_box = dispCrop(sample_asinus_slice,CV_coords,PV_coords[asinusNum])
-    
-    # preallocate max z projection array 
-    asinus_maxproj = np.zeros([4,np.size(sample_asinus,0),np.size(sample_asinus,1)],dtype='uint8')
-    
-    # get DAPI channel 
-    os.chdir(nuclei_dir)
-    # preallocate zstack for channel
-    zstack = np.zeros([n_zslices,np.size(sample_asinus,0),np.size(sample_asinus,1)],dtype='uint8')
-    
-    # iterate through and gather each z slice for channel
-    for i in range(n_zslices):
-        asinus_slice = Image.open(os.listdir()[i])
-        asinus,box = dispCrop(asinus_slice,CV_coords,PV_coords[asinusNum])
-        zstack[i] = asinus
-    
-    DAPI_max = np.max(zstack,axis=0)
-    
-    asinus_maxproj[1] = np.max(zstack,axis=0)
-    
-    # get all other channels 
-    os.chdir(organelle_dir)
-    for j in range(len(channels)):
+        # size the array
+        os.chdir(organelle_dir)
+        sample_asinus_slice = Image.open(os.listdir()[0])
+        sample_asinus,sample_box = dispCrop(sample_asinus_slice,CV_coords,PV_coords[asinusNum])
         
-        # get all files for channel 
-        files = []
-        for file in os.listdir():
-            if channels[j] in file:
-                files.append(file)
+        # preallocate max z projection array 
+        asinus_maxproj = np.zeros([4,np.size(sample_asinus,0),np.size(sample_asinus,1)],dtype='uint8')
         
+        # get DAPI channel 
+        os.chdir(nuclei_dir)
         # preallocate zstack for channel
-        zstack = np.zeros([n_zslices,np.size(sample_asinus,0),np.size(sample_asinus,1)],dtype='uint8')
+        zstack = np.zeros([nSlices,np.size(sample_asinus,0),np.size(sample_asinus,1)],dtype='uint8')
+        
+        # get files in right order
+        files = os.listdir()
+        files.sort(key= lambda x: int(x.split('Z')[1].split('.')[0]))
+        files.reverse()
         
         # iterate through and gather each z slice for channel
-        for i in range(n_zslices):
-            asinus_slice = Image.open(files[i])
+        for i in range(nSlices):
+            asinus_slice = Image.open(files[nSlices*stackNum+i])
             asinus,box = dispCrop(asinus_slice,CV_coords,PV_coords[asinusNum])
             zstack[i] = asinus
         
-        # index 0 for actin (c2), 1
-        if j==0:
-            asinus_maxproj[1] = np.max(zstack,axis=0)
-        elif j==1:
-            asinus_maxproj[0] = np.max(zstack,axis=0)
-        elif j==2:
-            asinus_maxproj[2] = np.max(zstack,axis=0)
-        else:
-            asinus_maxproj[3] = np.max(zstack,axis=0)
-    
-    # output as multipage TIF file 
-    os.chdir(lobule_dir + '/z10')
-    tifffile.imwrite('acinus' + str(asinusNum) + '_z' + str(n_zslices) + '_DAPI.tif',DAPI_max,photometric='minisblack')
-    tifffile.imwrite('acinus' + str(asinusNum) + '_z' + str(n_zslices) + '.tif',asinus_maxproj,photometric='minisblack')
+        DAPI_max = ndimage.median_filter(np.max(zstack,axis=0),size=1)
+        
+        # get all other channels 
+        os.chdir(organelle_dir)
+        for j in range(len(channels)):
+            
+            # get all files for channel 
+            files = []
+            for file in os.listdir():
+                if channels[j] in file:
+                    files.append(file)
+            files.sort(key= lambda x: int(x.split('Z')[1].split('-')[0]))
+            files.reverse()
+            
+            # preallocate zstack for channel
+            zstack = np.zeros([nSlices,np.size(sample_asinus,0),np.size(sample_asinus,1)],dtype='uint8')
+            
+            # iterate through and gather each z slice for channel
+            for i in range(nSlices):
+                asinus_slice = Image.open(files[nSlices*stackNum+i])
+                asinus,box = dispCrop(asinus_slice,CV_coords,PV_coords[asinusNum])
+                zstack[i] = asinus
+            
+            # index 0 for actin (c2), 1
+            if j==0:
+                asinus_maxproj[1] = ndimage.median_filter(np.max(zstack,axis=0),size=1)
+            elif j==1:
+                asinus_maxproj[0] = ndimage.median_filter(np.max(zstack,axis=0),size=1)
+            elif j==2:
+                asinus_maxproj[2] = ndimage.median_filter(np.max(zstack,axis=0),size=1)
+            else:
+                asinus_maxproj[3] = ndimage.median_filter(np.max(zstack,axis=0),size=1)
+        
+        # output as multipage TIF file 
+        os.chdir(acinus_dir)
+        stack_dir = acinus_dir + '/stack' + str(stackNum)
+        os.mkdir('stack' + str(stackNum))
+        os.chdir(stack_dir)
+        tifffile.imwrite('acinus' + str(asinusNum) + '_stack' + str(stackNum) + '_DAPI.tif',DAPI_max,photometric='minisblack')
+        tifffile.imwrite('acinus' + str(asinusNum) + '_stack' + str(stackNum) + '_orgs.tif',asinus_maxproj,photometric='minisblack')
 
 
 

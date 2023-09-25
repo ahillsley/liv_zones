@@ -5,7 +5,7 @@ from PIL import Image
 Image.MAX_IMAGE_PIXELS = 500000000
 from matplotlib import patches
 import tifffile
-sys.path.append('//groups/sgro/sgrolab/mark/liver_proj/diagonal-crop')
+sys.path.append('//prfs.hhmi.org/sgrolab/mark/liver_proj/diagonal-crop')
 import diagonal_crop
 
 def getRectangleCorner(coords,dist):
@@ -37,20 +37,25 @@ def dispCrop(img,CV_coords,PV_coords):
     return np.array(cropped_im),box
     
 
-organelle_dir = '//prfs.hhmi.org/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/mito_dendra2_phall555_Lipitox_R_580_Ms_PMP70_647'
-nuclei_dir = '//prfs.hhmi.org/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/DAPI'
-# organelle_dir = '//groups/sgro/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/mito_dendra2_phall555_Lipitox_R_580_Ms_PMP70_647'
-# nuclei_dir = '//groups/sgro/sgrolab/mark/liver_proj/cnt_liver3/lobule_1/DAPI'
-lobule_dir = '//groups/sgro/sgrolab/mark/liver_proj/cnt_liver3/lobule_1'
+lobule_dir = '//prfs.hhmi.org/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule2'
+organelle_dir = lobule_dir + '/Mito_Perox_LD_Actin'
+nuclei_dir = lobule_dir + '/DAPI'
 
 asinusNum = 0
-n_zslices = 15
+slicesPerStack = 5
+nStacks = 10
 
 pixels_per_um = 22.1870
 PV_coords = [[4578,5309],[15971,2376],[18702,15464]]
 CV_coords = [15024,9170]
 
 channels = ['C00','C01','C02','C03']
+
+os.chdir(nuclei_dir)
+
+files = os.listdir()
+files.sort(key= lambda x: int(x.split('Z')[1].split('.')[0]))
+files.reverse()
 
 #%%
 

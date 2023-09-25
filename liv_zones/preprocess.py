@@ -8,7 +8,7 @@ warnings.filterwarnings("ignore")
 from cellpose import models, utils
 from cellpose.io import imread
 
-from liv_zones import organelle_model as org_models
+import organelle_model as org_models
 
 
 # Always define save path not including the last /
@@ -34,14 +34,14 @@ def preprocess(image_path, save_path, feature_list=None):
         print("segmenting mitos")
         mito_model = org_models.Organelle_Model("mito")
         mito_mask = mito_model.segment(
-            img_path=image_path, channel=1, save=True, save_path="../test_set/"
+            img_path=image_path, channel=2, save=True, save_path="../test_set/"
         )
 
     if "lipid" in features:
         print("segmenting lipid droplets")
         lipid_model = org_models.Organelle_Model("lipid_droplet")
         lipid_mask = lipid_model.segment(
-            img_path=image_path, channel=2, save=True, save_path="../test_set/"
+            img_path=image_path, channel=3, save=True, save_path="../test_set/"
         )
 
     if "cv" in features:
