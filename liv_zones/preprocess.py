@@ -8,6 +8,7 @@ warnings.filterwarnings("ignore")
 from cellpose import models, utils
 from cellpose.io import imread
 
+
 from liv_zones import organelle_model as org_models
 from liv_zones.distance_to_veins import main as vein_dist
 
@@ -41,12 +42,14 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
             channel=channels["mito"],
             save=True,
             save_path=save_path,
+
         )
 
     if "lipid" in features:
         print("segmenting lipid droplets")
         lipid_model = org_models.OrganelleModel("lipid_droplet")
         lipid_mask = lipid_model.segment(
+
             img_path=image_path,
             channel=channels["lipid"],
             save=True,
