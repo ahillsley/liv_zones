@@ -253,8 +253,11 @@ def main(image_path,nSlices,nStacks):
             # output as multipage TIF files 
             outputTIFs(acinus_dir,stackNum,asinusNum,DAPI_max,asinus_maxproj)
 
-
-
+if __name__ == '__main__':
+    image_path = ''
+    n_slices = 10
+    n_stacks = 10
+    main(image_path, n_slices, n_stacks)
 
 
 
