@@ -8,13 +8,14 @@ warnings.filterwarnings("ignore")
 from cellpose import models, utils
 from cellpose.io import imread
 
-import organelle_model as org_models
+
+from liv_zones import organelle_model as org_models
+from liv_zones.distance_to_veins import main as vein_dist
 
 
 # Always define save path not including the last /
 
-
-def preprocess(image_path, save_path, feature_list=None):
+def preprocessing(image_path, save_path, channels, feature_list=None):
     # function to run segmentation of all organelles and get all
     # distance transforms needed for post_processing
 
@@ -25,38 +26,63 @@ def preprocess(image_path, save_path, feature_list=None):
 
     if "cell" in features:
         print("segmenting cells")
-        cell_model = org_models.Organelle_Model("cell")
+        cell_model = org_models.OrganelleModel("cell")
         cell_mask = cell_model.segment(
-            img_path=image_path, channel=0, save=True, save_path="../test_set/"
+            img_path=image_path,
+            channel=channels["actin"],
+            save=True,
+            save_path=save_path,
         )
 
     if "mito" in features:
         print("segmenting mitos")
-        mito_model = org_models.Organelle_Model("mito")
+        mito_model = org_models.OrganelleModel("mito")
         mito_mask = mito_model.segment(
-            img_path=image_path, channel=2, save=True, save_path="../test_set/"
+            img_path=image_path,
+            channel=channels["mito"],
+            save=True,
+            save_path=save_path,
+
         )
 
     if "lipid" in features:
         print("segmenting lipid droplets")
-        lipid_model = org_models.Organelle_Model("lipid_droplet")
+        lipid_model = org_models.OrganelleModel("lipid_droplet")
         lipid_mask = lipid_model.segment(
-            img_path=image_path, channel=3, save=True, save_path="../test_set/"
+
+            img_path=image_path,
+            channel=channels["lipid"],
+            save=True,
+            save_path=save_path,
         )
 
-    if "cv" in features:
-        print("calculating distance to central vein")
-        cv_distance = vein_distance(save_path, "c")
+    if "perox" in features:
+        print("segmenting peroxisomes")
+        peroxisome_model = org_models.OrganelleModel("peroxisome")
+        peroxisome_mask = peroxisome_model.segment(
+            img_path=image_path,
+            channel=channels["peroxi"],
+            save=True,
+            save_path=save_path,
+        )
 
-    if "pv" in features:
-        print("calculating distance to the portal vein")
-        pv_distance = vein_distance(save_path, "p")
+    if "nuclei" in features:
+        print("segmenting nuclei")
+        nuclei_model = org_models.OrganelleModel("nuclei")
+        nuclei_mask = nuclei_model.segment(
+            img_path=image_path,
+            channel=channels["nuclei"],
+            save=True,
+            save_path=save_path,
+        )
+
+    if "central" in features or "portal" in features:
+        print("calculating distance to central and portal veins")
+        vein_distance = vein_dist(f'{save_path}/cell_mask.npy', save_path)
 
     if "bound" in features:
-        print("calculating distance to cell boundry")
-        cell_edge_distance(
-            save_path,
-        )
+        print("calculating distance to cell boundary")
+        cell_edge_distance(save_path)
 
     return
 
@@ -71,9 +97,11 @@ def file_check(path):
         "cell_mask.npy",
         "mito_mask.npy",
         "lipid_droplet_mask.npy",
-        "cv_distance.npy",
-        "pv_distance.npy",
-        "boundry_distance.npy",
+        "peroxisome_mask.npy",
+        "nuclei_mask.npy",
+        "central_dist.npy",
+        "portal_dist.npy",
+        "boundary_dist.npy",
     ]
 
     missing = False
@@ -105,7 +133,7 @@ def cell_edge_distance(save_path):
     outlines = utils.masks_to_outlines(cell_mask)
     dist_transform = distance_transform_edt((outlines == False) * 1)
 
-    np.save(f"{save_path}/boundry_distance.npy", dist_transform)
+    np.save(f"{save_path}/boundary_dist.npy", dist_transform)
     return
 
 

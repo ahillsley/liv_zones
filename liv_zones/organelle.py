@@ -4,20 +4,27 @@ import pandas as pd
 from skimage.measure import regionprops_table
 
 
+# Adjust default values here
+# --------------------------
+mito_aspect_split = (1.2, 2)
+ld_area_split = (2.41, 9.64)
+peroxisome_aspect_split = (1, 2)  # completely made up, need to change
+
+
 class Masks:
     def __init__(self, path):
         self.cell_mask = np.load(f"{path}/cell_mask.npy")
-        self.cv_distance = np.load(f"{path}/cv_distance.npy")
-        self.pv_distance = np.load(f"{path}/pv_distance.npy")
-        self.cell_edge_distance = np.load(f"{path}/boundry_distance.npy")
+        self.cv_distance = np.load(f"{path}/central_dist.npy")
+        self.pv_distance = np.load(f"{path}/portal_dist.npy")
+        self.cell_edge_distance = np.load(f"{path}/boundary_dist.npy")
 
 
 def organelle_features(
     path,
     scale,
-    mito_aspect_split=(1.2, 2),
-    ld_area_split=(2.41, 9.64),
-    organelle_list=["mitos", "lipid_droplets"],
+    mito_aspect_split=mito_aspect_split,
+    ld_area_split=ld_area_split,
+    organelle_list=["mitos", "lipid_droplets", "peroxisomes", "nuclei"],
 ):
 
     cell_level_masks = Masks(path)
@@ -32,6 +39,18 @@ def organelle_features(
         lipid_droplet_mask = np.load(f"{path}/lipid_droplet_mask.npy")
         lipid_droplet_properties(
             lipid_droplet_mask, cell_level_masks, path, scale, ld_area_split
+        )
+
+    if "perox" in organelles:
+        peroxisome_mask = np.load(f"{path}/peroxisome_mask.npy")
+        peroxisome_properties(
+            peroxisome_mask, cell_level_masks, path, scale, peroxisome_aspect_split
+        )
+
+    if "nuclei" in organelles:
+        nuclei_mask = np.load(f"{path}/nuclei_mask.npy")
+        nuclei_properties(
+                nuclei_mask, cell_level_masks, path, scale
         )
 
     return
@@ -58,7 +77,7 @@ def mito_properties(
     mito_props = pd.DataFrame.from_dict(mito_props_dict)
 
     # convert from pixels to microns
-    mito_props["area"] = mito_props["area"] / (scale**2)
+    mito_props["area"] = mito_props["area"] / (scale ** 2)
     mito_props["perimeter"] = mito_props["perimeter"] / scale
     mito_props["axis_major_length"] = mito_props["axis_major_length"] / scale
     mito_props["axis_minor_length"] = mito_props["axis_minor_length"] / scale
@@ -106,14 +125,13 @@ def lipid_droplet_properties(
             "centroid",
             "axis_major_length",
             "axis_minor_length",
-            "solidity",
         ),
     )
 
     ld_props = pd.DataFrame.from_dict(ld_props_dict)
 
     # convert from pixels to microns
-    ld_props["area"] = ld_props["area"] / (scale**2)
+    ld_props["area"] = ld_props["area"] / (scale ** 2)
     ld_props["perimeter"] = ld_props["perimeter"] / scale
     ld_props["axis_major_length"] = ld_props["axis_major_length"] / scale
     ld_props["axis_minor_length"] = ld_props["axis_minor_length"] / scale
@@ -139,6 +157,105 @@ def lipid_droplet_properties(
         ld_props.to_csv(f"{save_path}/lipid_droplet_properties.csv")
 
     return ld_props
+
+
+def peroxisome_properties(
+    peroxisome_mask,
+    masks,
+    save_path,
+    scale,
+    peroxisome_aspect_split,
+    save=True,  # pixels / micron
+):
+
+    # returns props in pixel units
+    peroxi_props_dict = regionprops_table(
+        peroxisome_mask,
+        properties=(
+            "label",
+            "area",
+            "perimeter",
+            "centroid",
+            "axis_major_length",
+            "axis_minor_length",
+            "solidity",
+        ),
+    )
+
+    peroxi_props = pd.DataFrame.from_dict(peroxi_props_dict)
+
+    # convert from pixels to microns
+    peroxi_props["area"] = peroxi_props["area"] / (scale ** 2)
+    peroxi_props["perimeter"] = peroxi_props["perimeter"] / scale
+    peroxi_props["axis_major_length"] = peroxi_props["axis_major_length"] / scale
+    peroxi_props["axis_minor_length"] = peroxi_props["axis_minor_length"] / scale
+
+    peroxi_props["cell_id"] = map_to_cell(peroxi_props, masks.cell_mask)
+    peroxi_props["aspect_ratio"] = (
+        peroxi_props["axis_major_length"] / peroxi_props["axis_minor_length"]
+    )
+
+    # use formula to calc boundry to cell edge
+    peroxi_props["boundry_dist"] = map_to_cell(peroxi_props, masks.cell_edge_distance)
+
+    # use new ascini distance measure
+    # portal vein = 1, central vein = -1
+    peroxi_props["ascini_position"] = ascini_position(
+        peroxi_props, masks.cv_distance, masks.pv_distance
+    )
+
+    (
+        peroxi_props["aspect_type_1"],
+        peroxi_props["aspect_type_2"],
+        peroxi_props["aspect_type_3"],
+    ) = split_types(peroxi_props, "aspect_ratio", peroxisome_aspect_split)
+    if save is True:
+        peroxi_props.to_csv(f"{save_path}/peroxisome_properties.csv")
+
+    return peroxi_props
+
+
+def nuclei_properties(nuclei_mask, masks, save_path, scale, save=True):
+
+    # returns props in pixel units
+    nuclei_props_dict = regionprops_table(
+        nuclei_mask,
+        properties=(
+            "label",
+            "area",
+            "perimeter",
+            "centroid",
+            "axis_major_length",
+            "axis_minor_length",
+        ),
+    )
+
+    nuclei_props = pd.DataFrame.from_dict(nuclei_props_dict)
+
+    # convert from pixels to microns
+    nuclei_props["area"] = nuclei_props["area"] / (scale ** 2)
+    nuclei_props["perimeter"] = nuclei_props["perimeter"] / scale
+    nuclei_props["axis_major_length"] = nuclei_props["axis_major_length"] / scale
+    nuclei_props["axis_minor_length"] = nuclei_props["axis_minor_length"] / scale
+
+    nuclei_props["cell_id"] = map_to_cell(nuclei_props, masks.cell_mask)
+    nuclei_props["aspect_ratio"] = (
+        nuclei_props["axis_major_length"] / nuclei_props["axis_minor_length"]
+    )
+
+    # use formula to calc boundry to cell edge
+    nuclei_props["boundry_dist"] = map_to_cell(nuclei_props, masks.cell_edge_distance)
+
+    # use new ascini distance measure
+    # portal vein = 1, central vein = -1
+    nuclei_props["ascini_position"] = ascini_position(
+        nuclei_props, masks.cv_distance, masks.pv_distance
+    )
+
+    if save is True:
+        nuclei_props.to_csv(f"{save_path}/nuclei_properties.csv")
+
+    return nuclei_props
 
 
 def map_to_cell(props, mask):
