@@ -127,6 +127,8 @@ def getOrgFiles(organelle_dir,channel):
             files.append(file)
     files.sort(key= lambda x: int(x.split('Z')[1].split('-')[0]))
     files.reverse()
+    
+    return files
 
 def getRectangleCorner(coords,dist):
     angle = np.pi*5/4
@@ -205,6 +207,7 @@ def getSampleAsinus(organelle_dir,CV_coords,PV_coords,asinusNum):
     sample_asinus_slice = Image.open(os.listdir()[0])
     sample_asinus,sample_box = dispCrop(sample_asinus_slice,CV_coords,PV_coords[asinusNum])
 
+    return sample_asinus
 
 def main(image_path,nSlices,nStacks):
     
@@ -236,7 +239,7 @@ def main(image_path,nSlices,nStacks):
     for asinusNum in range(3):
         
         # create directory for acinus
-        acinus_dir = makeAcinusDir()
+        acinus_dir = makeAcinusDir(lobule_dir,asinusNum)
         
         # iterate through each z chunk
         for stackNum in range(nStacks):    
@@ -254,9 +257,9 @@ def main(image_path,nSlices,nStacks):
             outputTIFs(acinus_dir,stackNum,asinusNum,DAPI_max,asinus_maxproj)
 
 if __name__ == '__main__':
-    image_path = ''
-    n_slices = 10
-    n_stacks = 10
+    image_path = '//prfs.hhmi.org/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/LobuleT'
+    n_slices = 5
+    n_stacks = 1
     main(image_path, n_slices, n_stacks)
 
 
