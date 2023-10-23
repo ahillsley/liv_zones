@@ -127,17 +127,6 @@ def getDAPI(
     
     return ndimage.median_filter(np.max(zstack,axis=0),size=1)
 
-def getOrgFiles(organelle_dir,channel):
-    os.chdir(organelle_dir)
-    files = []
-    for file in os.listdir():
-        if channel in file:
-            files.append(file)
-    files.sort(key= lambda x: int(x.split('Z')[1].split('-')[0]))
-    files.reverse()
-    
-    return files
-
 def getRectangleCorner(coords,dist):
     angle = np.pi*5/4
     radius = np.sqrt(2*(.2*dist)**2)
