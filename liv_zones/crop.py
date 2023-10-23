@@ -6,6 +6,7 @@ Image.MAX_IMAGE_PIXELS = 500000000
 from scipy import ndimage
 from matplotlib import patches
 import tifffile
+import glob
 
 _Point = collections.namedtuple('Point', ['x', 'y'])
 
@@ -97,24 +98,31 @@ def getVeinCoords(lobule_dir):
     os.chdir(lobule_dir)
     with open('vein_coords.pickle','rb') as f:
         CV_coords,PV_coords = pickle.load(f)
-    return [CV_coords,PV_coords]
+    return np.array(CV_coords), np.array(PV_coords)
 
-def getDAPI(nuclei_dir,nSlices,asinusNum,stackNum,sample_asinus,CV_coords,PV_coords):
+def getDAPI(
+    nuclei_dir,
+    nSlices,
+    stackNum,
+    crop_info):
     
     # get DAPI channel 
-    os.chdir(nuclei_dir)
     # preallocate zstack for channel
-    zstack = np.zeros([nSlices,np.size(sample_asinus,0),np.size(sample_asinus,1)],dtype='uint8')
+    zstack = np.zeros((
+        nSlices,
+        crop_info['height'],
+        crop_info['width']),
+        dtype='uint8')
     
     # get files in right order
-    files = os.listdir()
+    files = glob.glob(f'{nuclei_dir}/*.tif')
     files.sort(key= lambda x: int(x.split('Z')[1].split('.')[0]))
     files.reverse()
     
     # iterate through and gather each z slice for channel
     for i in range(nSlices):
         asinus_slice = Image.open(files[nSlices*stackNum+i])
-        asinus,box = dispCrop(asinus_slice,CV_coords,PV_coords[asinusNum])
+        asinus,box = dispCrop(asinus_slice, crop_info=crop_info)
         zstack[i] = asinus
     
     return ndimage.median_filter(np.max(zstack,axis=0),size=1)
@@ -135,81 +143,107 @@ def getRectangleCorner(coords,dist):
     radius = np.sqrt(2*(.2*dist)**2)
     return [coords[0] + radius * np.cos(angle), coords[1]+radius*np.sin(angle)]
 
-def dispCrop(img,CV_coords,PV_coords):
+def dispCrop(img, CV_coords=None, PV_coords=None, crop_info=None):
     
-    # compute distance between portal and central vein 
-    asinus_dist = np.sqrt((PV_coords[0]-CV_coords[0])**2+(PV_coords[1]-CV_coords[1])**2)
-    
-    # compute angle between portal and central veins relative to coordinate axes 
-    asinus_theta = np.arctan((CV_coords[1]-PV_coords[1])/(CV_coords[0]-PV_coords[0]))
-    # if PV is to the left of CV, add pi 
-    if PV_coords[0] < CV_coords[0]:
-        asinus_theta += np.pi
-    
-    # define bottom corner of bouding rectangle 
-    rectangle_coords = getRectangleCorner(CV_coords,asinus_dist)
-    
-    # draw box over asinus 
-    box = patches.Rectangle(rectangle_coords,1.4*asinus_dist,.4*asinus_dist,angle=np.rad2deg(asinus_theta),rotation_point=(CV_coords[0],CV_coords[1]),alpha=0.5)
-    
+    if crop_info is None:
+        print('calculating crop info')
+        # compute distance between portal and central vein 
+        asinus_dist = np.linalg.norm(PV_coords - CV_coords)
+
+        # compute angle between portal and central veins relative to coordinate axes 
+        asinus_theta = np.arctan((CV_coords[1]-PV_coords[1])/(CV_coords[0]-PV_coords[0]))
+        # if PV is to the left of CV, add pi 
+        if PV_coords[0] < CV_coords[0]:
+            asinus_theta += np.pi
+        
+        # define bottom corner of bouding rectangle 
+        rectangle_coords = getRectangleCorner(CV_coords,asinus_dist)
+        
+        # draw box over asinus 
+        box = patches.Rectangle(rectangle_coords,1.4*asinus_dist,.4*asinus_dist,angle=np.rad2deg(asinus_theta),rotation_point=(CV_coords[0],CV_coords[1]),alpha=0.5)
+        
+        crop_info = {
+            'base': box.get_corners()[2],
+            'angle': np.pi - asinus_theta,
+            'height': int(0.4 * asinus_dist),
+            'width': int(1.2 * asinus_dist)
+        }
     # crop image according to bounding box 
-    cropped_im = crop(img, box.get_corners()[2], np.pi-asinus_theta, .4*asinus_dist, 1.4*asinus_dist)
+    cropped_im = crop(img, crop_info['base'], crop_info['angle'], crop_info['height'], crop_info['width'])
     
     # return flipped image as array and box for image
-    return np.array(cropped_im),box
+    return np.array(cropped_im), crop_info
 
-def getOrgStacks(sample_asinus,organelle_dir,channels,nSlices,stackNum,CV_coords,PV_coords,asinusNum):
+def getOrgStacks(
+    organelle_dir,
+    channels,
+    nSlices,
+    stackNum,
+    crop_info
+    ):
     
-    asinus_maxproj = np.zeros([4,np.size(sample_asinus,0),np.size(sample_asinus,1)],dtype='uint8')
+    asinus_maxproj = np.zeros((
+        len(channels),
+        crop_info['height'],
+        crop_info['width']), 
+        dtype='uint8')
     
-    for j in range(len(asinus_maxproj)):
-        
+    for i, (key, values) in enumerate(channels.items()):
+        print(i)
         # get all files for channel 
-        files = getOrgFiles(organelle_dir,channels[j])
-        
+        org_files = glob.glob(f'{organelle_dir}/*{values}.tif')
+        org_files.sort(key= lambda x: int(x.split('Z')[1].split('-')[0]))
+        org_files.reverse()
+
         # preallocate zstack for channel
-        zstack = np.zeros([nSlices,np.size(sample_asinus,0),np.size(sample_asinus,1)],dtype='uint8')
-        
+        zstack = np.zeros((
+            nSlices,
+            crop_info['height'],
+            crop_info['width']),
+            dtype='uint8')
+
         # iterate through and gather each z slice for channel
-        for i in range(nSlices):
-            asinus_slice = Image.open(files[nSlices*stackNum+i])
-            asinus,box = dispCrop(asinus_slice,CV_coords,PV_coords[asinusNum])
-            zstack[i] = asinus
+        for j in range(nSlices):
+            asinus_slice = Image.open(org_files[nSlices*stackNum+j])
+            asinus,box = dispCrop(asinus_slice, crop_info=crop_info)
+            zstack[j] = asinus
         
-        # index 0 for actin (c2), 1
-        if j==0:
-            asinus_maxproj[1] = ndimage.median_filter(np.max(zstack,axis=0),size=1)
-        elif j==1:
-            asinus_maxproj[0] = ndimage.median_filter(np.max(zstack,axis=0),size=1)
-        elif j==2:
-            asinus_maxproj[2] = ndimage.median_filter(np.max(zstack,axis=0),size=1)
-        else:
-            asinus_maxproj[3] = ndimage.median_filter(np.max(zstack,axis=0),size=1)
-    
+        asinus_maxproj[i] = ndimage.median_filter(np.max(zstack,axis=0),size=1)
+
     return asinus_maxproj
     
 def makeAcinusDir(lobule_dir,asinusNum):
-    os.chdir(lobule_dir)
-    acinus_dir = lobule_dir + '/acinus' + str(asinusNum)
-    os.mkdir(acinus_dir)
+    acinus_dir = f'{lobule_dir}/acinus{asinusNum}'
+    if not os.path.exists(acinus_dir):
+        os.mkdir(acinus_dir)
+    else:
+        print('Directory already exists')
     return acinus_dir
 
 def outputTIFs(acinus_dir,stackNum,asinusNum,DAPI_max,asinus_maxproj):
-    os.chdir(acinus_dir)
-    stack_dir = acinus_dir + '/stack' + str(stackNum)
-    os.mkdir('stack' + str(stackNum))
-    os.chdir(stack_dir)
-    tifffile.imwrite('acinus' + str(asinusNum) + '_stack' + str(stackNum) + '_DAPI.tif',DAPI_max,photometric='minisblack')
-    tifffile.imwrite('acinus' + str(asinusNum) + '_stack' + str(stackNum) + '_orgs.tif',asinus_maxproj,photometric='minisblack')
+    stack_dir = f'{acinus_dir}/stack{stackNum}'
+    if not os.path.exists(stack_dir):
+        os.mkdir(stack_dir)
+    tifffile.imwrite(f'{stack_dir}/stack{stackNum}_DAPI.tif',DAPI_max,photometric='minisblack')
+    tifffile.imwrite(f'{stack_dir}/stack{stackNum}_orgs.tif',asinus_maxproj,photometric='minisblack')
 
 def getSampleAsinus(organelle_dir,CV_coords,PV_coords,asinusNum):
-    os.chdir(organelle_dir)
-    sample_asinus_slice = Image.open(os.listdir()[0])
-    sample_asinus,sample_box = dispCrop(sample_asinus_slice,CV_coords,PV_coords[asinusNum])
+    sample_image_path = glob.glob(f'{organelle_dir}/*.tif')
+    sample_asinus_slice = Image.open(sample_image_path[0])
+    sample_asinus, crop_info = dispCrop(
+        sample_asinus_slice,
+        CV_coords,
+        PV_coords[asinusNum,:]
+        )
 
-    return sample_asinus
+    return sample_asinus, crop_info
 
-def main(image_path,nSlices,nStacks):
+def main(
+    image_path,
+    nSlices,
+    nStacks,
+    channels
+    ):
     
     """
     Generates cropped acinus max z projections from whole lobule stiched images
@@ -230,10 +264,7 @@ def main(image_path,nSlices,nStacks):
     nuclei_dir = lobule_dir + '/DAPI'
     
     # get coordinates from file 
-    CV_coords,PV_coords = getVeinCoords(lobule_dir)
-    
-    # set channel names for organelle images 
-    channels = ['C00','C01','C02','C03']
+    CV_coords, PV_coords = getVeinCoords(lobule_dir)
 
     # iterate through each acinus
     for asinusNum in range(3):
@@ -245,23 +276,49 @@ def main(image_path,nSlices,nStacks):
         for stackNum in range(nStacks):    
 
             # get sample crop for array sizing 
-            sample_asinus = getSampleAsinus(organelle_dir,CV_coords,PV_coords,asinusNum)
-            
+            sample_asinus, crop_info = getSampleAsinus(
+                organelle_dir,
+                CV_coords,
+                PV_coords,
+                asinusNum
+                )
+
+            print('ran sample')
             # get DAPI max projection 
-            DAPI_max = getDAPI(nuclei_dir,nSlices,asinusNum,stackNum,sample_asinus,CV_coords,PV_coords)
-            
+            DAPI_max = getDAPI(
+                nuclei_dir,
+                nSlices,
+                stackNum,
+                crop_info
+                )
+            print('ran DAPI')
+
             # get all other channels 
-            asinus_maxproj = getOrgStacks(sample_asinus,organelle_dir,channels,nSlices,stackNum,CV_coords,PV_coords,asinusNum)
-            
+            asinus_maxproj = getOrgStacks(
+                organelle_dir,
+                channels,
+                nSlices,
+                stackNum,
+                crop_info)
+            print('ran orgs')
+
             # output as multipage TIF files 
-            outputTIFs(acinus_dir,stackNum,asinusNum,DAPI_max,asinus_maxproj)
+            outputTIFs(
+                acinus_dir,
+                stackNum,
+                asinusNum,
+                DAPI_max,
+                asinus_maxproj)
 
 if __name__ == '__main__':
-    image_path = '//prfs.hhmi.org/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/LobuleT'
-    n_slices = 5
+    image_path = "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv1/Lobule1"
+    
+    channels = {
+        "actin": 'C00',
+        "mito": 'C01',
+        "lipid": 'C02',
+        "peroxi": 'C03'
+        }
+    n_slices = 10
     n_stacks = 1
-    main(image_path, n_slices, n_stacks)
-
-
-
-
+    main(image_path, n_slices, n_stacks, channels)
