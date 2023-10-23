@@ -6,9 +6,9 @@ from skimage.measure import regionprops_table
 
 # Adjust default values here
 # --------------------------
-mito_aspect_split = (1.2, 2)
-ld_area_split = (2.41, 9.64)
-peroxisome_aspect_split = (1, 2)  # completely made up, need to change
+mito_aspect_split = (1.352, 1.970)
+ld_area_split = (0.88, 2.283)
+peroxisome_aspect_split = (1.327, 1.843)  # completely made up, need to change
 
 
 class Masks:

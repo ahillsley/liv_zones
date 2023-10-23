@@ -13,15 +13,78 @@ scale = 22.187  # pixels per micron
 
 
 image_paths = [
-    #"../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus0/stack0/acinus0_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule1/acinus0/stack0/acinus0_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule1/acinus1/stack0/acinus1_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule1/acinus2/stack0/acinus2_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule2/acinus0/stack0/acinus0_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule2/acinus1/stack0/acinus1_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule2/acinus2/stack0/acinus2_stack0.tif",
+
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus0/stack0/acinus0_stack0.tif",
     "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus1/stack0/acinus1_stack0.tif",
     "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus2/stack0/acinus2_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule2/acinus0/stack0/acinus0_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule2/acinus1/stack0/acinus1_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule2/acinus2/stack0/acinus2_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule3/acinus0/stack0/acinus0_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule3/acinus1/stack0/acinus1_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule3/acinus2/stack0/acinus2_stack0.tif",
+
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule1/acinus0/stack0/acinus0_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule1/acinus1/stack0/acinus1_stack0tif.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule1/acinus2/stack0/acinus2_stack0tif.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule2/acinus0/stack0/acinus0_stack0tif.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule2/acinus1/stack0/acinus1_stack0tif.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule2/acinus2/stack0/acinus2_stack0tif.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule3/acinus0/stack0/acinus0_stack0tif.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule3/acinus1/stack0/acinus1_stack0tif.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule3/acinus2/stack0/acinus2_stack0tif.tif",
+
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule1/acinus0/stack0/acinus0_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule1/acinus1/stack0/acinus1_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule1/acinus2/stack0/acinus2_stack0.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule2/acinus0/stack0/acinus0_stack0tif.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule2/acinus2/stack0/acinus2_stack0tif.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule3/acinus1/stack0/acinus1_stack0tif.tif",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule3/acinus2/stack0/acinus2_stack0tif.tif",
+
 ]
 
 save_paths = [
-    #"../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus0/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule1/acinus0/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule1/acinus1/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule1/acinus2/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule2/acinus0/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule2/acinus1/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule2/acinus2/stack0",
+
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus0/stack0",
     "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus1/stack0",
     "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus2/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule2/acinus0/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule2/acinus1/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule2/acinus2/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule3/acinus0/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule3/acinus1/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule3/acinus2/stack0",
+
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule1/acinus0/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule1/acinus1/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule1/acinus2/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule2/acinus0/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule2/acinus1/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule2/acinus2/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule3/acinus0/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule3/acinus1/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule3/acinus2/stack0",
+
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule1/acinus0/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule1/acinus1/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule1/acinus2/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule2/acinus0/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule2/acinus2/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule3/acinus1/stack0",
+    "../../../../../../../feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule3/acinus2/stack0",
 ]
 
 
