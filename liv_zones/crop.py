@@ -8,7 +8,7 @@ from scipy import ndimage
 from matplotlib import patches
 import tifffile
 import glob
-import paths
+from liv_zones import paths
 
 _Point = collections.namedtuple("Point", ["x", "y"])
 
@@ -304,6 +304,14 @@ def main(image_path, nSlices, nStacks, channels):
 
         # iterate through each z chunk
         for stackNum in range(nStacks):
+
+            # check if stack has already been created
+            stack_dir = f"{acinus_dir}/stack{stackNum}"
+            stack_images = glob.glob(f'{stack_dir}/*.tif')
+            if len(stack_images) > 2:
+                print('stack already created')
+                continue
+
             # get sample crop for array sizing
             sample_asinus, crop_info = getSampleAsinus(
                 organelle_dir, CV_coords, PV_coords, asinusNum
@@ -326,22 +334,15 @@ def main(image_path, nSlices, nStacks, channels):
 
 
 if __name__ == "__main__":
-    print(len(paths.female_cnt_paths))
+    print(len(paths.male_cnt_paths))
 
-    file_paths = paths.female_cnt_paths
-    files = set([p[:-8] for p in file_paths])
+    file_paths = paths.male_cnt_paths
+    files = list(set([p[:-8] for p in file_paths]))
     print(len(file_paths))
     print(len(files))
-    for path in files:
-        folder_1_exists = os.path.isdir(f"{path}/acinus0")
-        folder_2_exists = os.path.isdir(f"{path}/acinus1")
-        folder_3_exists = os.path.isdir(f"{path}/acinus2")
-        print(path)
-        if folder_1_exists and folder_2_exists and folder_3_exists:
-            continue
 
-        else:
-            channels = {"actin": "C01", "mito": "C00", "lipid": "C02", "peroxi": "C03"}
-            n_slices = 10
-            n_stacks = 1
-            main(path, n_slices, n_stacks, channels)
+    for path in files:
+        channels = {"actin": "C01", "mito": "C00", "lipid": "C02", "peroxi": "C03"}
+        n_slices = 10
+        n_stacks = 1
+        main(path, n_slices, n_stacks, channels)
