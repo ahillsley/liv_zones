@@ -15,6 +15,7 @@ from liv_zones.distance_to_veins import main as vein_dist
 
 # Always define save path not including the last /
 
+
 def preprocessing(image_path, save_path, channels, feature_list=None):
     # function to run segmentation of all organelles and get all
     # distance transforms needed for post_processing
@@ -42,19 +43,41 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
             channel=channels["mito"],
             save=True,
             save_path=save_path,
-
         )
 
     if "lipid" in features:
         print("segmenting lipid droplets")
         lipid_model = org_models.OrganelleModel("lipid_droplet")
-        lipid_mask = lipid_model.segment(
-
+        small_lipid_mask = lipid_model.segment(
             img_path=image_path,
             channel=channels["lipid"],
-            save=True,
+            save=False,
             save_path=save_path,
         )
+
+        large_lipid_model = org_models.OrganelleModel("lipid_droplet_large")
+        large_lipid_mask = large_lipid_model.segment(
+            img_path=image_path,
+            channel=channels["lipid"],
+            save=False,
+            save_path=save_path,
+        )
+
+        # shift labels of all objects in large_lipid_mask
+        binary_large_lipid_mask = np.copy(large_lipid_mask[0])
+        binary_large_lipid_mask[binary_large_lipid_mask != 0] = 1
+
+        shifted_large_lipid_mask = (
+            binary_large_lipid_mask * small_lipid_mask[0].max() + large_lipid_mask
+        )
+
+        # when objects overlap between large and small masks, defer to large mask
+        overlap_small_lipid_mask = np.copy(small_lipid_mask[0])
+        overlap_small_lipid_mask[binary_large_lipid_mask == 1] = 0
+
+        total_lipid_mask = overlap_small_lipid_mask + shifted_large_lipid_mask
+
+        np.save(f"{save_path}/lipid_droplet_mask.npy", total_lipid_mask)
 
     if "perox" in features:
         print("segmenting peroxisomes")
@@ -78,7 +101,7 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
 
     if "central" in features or "portal" in features:
         print("calculating distance to central and portal veins")
-        vein_distance = vein_dist(f'{save_path}/cell_mask.npy', save_path)
+        vein_distance = vein_dist(f"{save_path}/cell_mask.npy", save_path)
 
     if "bound" in features:
         print("calculating distance to cell boundary")
