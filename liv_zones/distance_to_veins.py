@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from skimage.draw import ellipse
 from scipy import optimize
 from scipy.ndimage import distance_transform_edt
+import scipy.ndimage as nd
 #import typer
 
 
@@ -80,16 +81,28 @@ def main(input_file, output_dir):
     Returns:
         None
     """
-    data = np.load(input_file)
-    veins = get_veins(data)
-    fits = fit_ellipses(veins)
-    for name, fit in fits.items():
-        img = np.ones_like(veins)
-        img[fit] = 0
-        dist = distance_transform_edt(img)
-        # Save
-        np.save(f"{output_dir}/{name}_dist.npy", dist)
+    masks = np.load(input_file)
+    data = nd.binary_dilation(masks >0, iterations=100)*1
+    holes = (data == 0).astype(int)
+    labelled_holes = label(holes)
+    # Get sizes of objects in labelled image
+    object_sizes = sorted(np.bincount(labelled_holes.ravel()), reverse=True)
+    # Remove all object smaller than the second largest
+    vein_size = object_sizes[2]
+    veins = remove_small_objects(labelled_holes, vein_size)
+    dilated_veins = nd.binary_dilation(veins >0, iterations=100)
+    labeled_veins = label(dilated_veins)
+    for l in range(1,3):
+        img = np.ones_like(labeled_veins)
+        img[labeled_veins == l] = 0
+        center = np.mean(np.where(img ==0), axis=1)
+        if center[1] > data.shape[1]/2:
+            name = 'portal'
+        else:
+            name = 'central'
 
+        dist = distance_transform_edt(img)
+        np.save(f"{output_dir}/{name}_dist.npy", dist)
 
 if __name__ == "__main__":
     #typer.run(main)
