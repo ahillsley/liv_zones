@@ -8,7 +8,6 @@ warnings.filterwarnings("ignore")
 from cellpose import models, utils
 from cellpose.io import imread
 
-
 from liv_zones import organelle_model as org_models
 from liv_zones.distance_to_veins import main as vein_dist
 
@@ -101,7 +100,7 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
 
     if "central" in features or "portal" in features:
         print("calculating distance to central and portal veins")
-        vein_distance = vein_dist(f"{save_path}/cell_mask.npy", save_path)
+        vein_distance = vein_dist(f"{save_path}/mito_mask.npy", save_path)
 
     if "bound" in features:
         print("calculating distance to cell boundary")
@@ -158,10 +157,3 @@ def cell_edge_distance(save_path):
 
     np.save(f"{save_path}/boundary_dist.npy", dist_transform)
     return
-
-
-if __name__ == "__main__":
-    test_img_path = "../test_set/0-Actin_Dendra_LD-1_Merge_WD_M1_12pm_dendra2_actin647_lipitox594.lif - TileScan 2_Merged-2.tif"
-    path = "../test_set"
-    a = file_check(path)
-    preprocess(test_img_path, path, a)
