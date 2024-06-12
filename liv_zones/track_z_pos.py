@@ -1,5 +1,6 @@
-# This script runs on motile
+# This script runs on motile and the motile toolbox
 # https://github.com/funkelab/motile
+# https://github.com/funkelab/motile_toolbox
 import numpy as np
 import glob
 import pandas as pd
@@ -149,4 +150,5 @@ if __name__ == '__main__':
     # Note that cell_id_linked = 0 means that the cell is not part of a track
     # i.e. that cell was only found in a single slice
     acinus_props = acinus_props.assign(cell_id_linked=node_connections)
+    acinus_props = acinus_props.assign(stack_id=connected_nodes[:,0])
     acinus_props.to_csv(f'{acinus_path}/avg_cell_props_cell_ids_linked.csv')
