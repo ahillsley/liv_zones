@@ -89,8 +89,13 @@ def get_candidate_graph_from_points_list(
 
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description="Link cell IDs across stacks in an acinus using motile tracking.")
+    parser.add_argument("acinus_path", help="Path to the acinus directory (contains stack subdirectories)")
+    args = parser.parse_args()
+
     # for a given folder, read in all the avg_properties_per_cell_positions
-    acinus_path = '/groups/feliciano/felicianolab/For_Alex_and_Mark/FOR_ALEX/Male/Liv1/Lobule1/acinus0'
+    acinus_path = args.acinus_path
     stack_paths = glob.glob(f'{acinus_path}/*/average_properties_per_cell.csv')
 
     # Extract only the x (centroid-1) and y (centroid-0) positions from the 

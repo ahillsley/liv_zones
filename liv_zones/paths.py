@@ -1,212 +1,51 @@
 # %%
+# Edit these paths to point to your data directories.
+# Each path should be an acinus directory containing stack subdirectories.
+#
+# Expected directory structure:
+#   <root>/<Sex>/<Diet>/<Liver>/<Lobule>/<Acinus>/
+#
+# Example:
+#   /path/to/your/data/Male/CNT/Liv1/Lobule1/acinus0/
+#
+# Diet abbreviations used in this study:
+#   CNT = control, STV = steatohepatitis, WD = western diet
+
 male_cnt_paths = [
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv1/Lobule2/acinus2',
-
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv2/Lobule3/acinus2',
-
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv3/Lobule3/acinus2',
-
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/CNT/Liv5/Lobule3/acinus2',
+    '/path/to/your/data/Male/CNT/Liv1/Lobule1/acinus0',
+    '/path/to/your/data/Male/CNT/Liv1/Lobule1/acinus1',
+    # add more paths as needed...
 ]
 
 male_stv_paths = [
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv1/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv1/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv1/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv1/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv1/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv1/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv1/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv1/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv1/Lobule3/acinus2',
-
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv2/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv2/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv2/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv2/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv2/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv2/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv2/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv2/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv2/Lobule3/acinus2',
-
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv3/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv3/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv3/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv3/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv3/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv3/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv3/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv3/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv3/Lobule3/acinus2',
-
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv5/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv5/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv5/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv5/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv5/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv5/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv5/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv5/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/STV/Liv5/Lobule3/acinus2',
+    '/path/to/your/data/Male/STV/Liv1/Lobule1/acinus0',
+    '/path/to/your/data/Male/STV/Liv1/Lobule1/acinus1',
+    # add more paths as needed...
 ]
 
-male_wd_paths =[
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv1/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv1/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv1/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv1/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv1/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv1/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv1/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv1/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv1/Lobule3/acinus2',
-
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv2/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv2/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv2/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv2/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv2/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv2/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv2/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv2/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv2/Lobule3/acinus2',
-
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv3/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv3/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv3/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv3/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv3/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv3/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv3/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv3/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Male/WD/Liv3/Lobule3/acinus2',
+male_wd_paths = [
+    '/path/to/your/data/Male/WD/Liv1/Lobule1/acinus0',
+    '/path/to/your/data/Male/WD/Liv1/Lobule1/acinus1',
+    # add more paths as needed...
 ]
 
-female_cnt_paths =[
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv1/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv1/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv1/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv1/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv1/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv1/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv1/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv1/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv1/Lobule3/acinus2',
-
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv2/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv2/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv2/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv2/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv2/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv2/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv2/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv2/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv2/Lobule3/acinus2',
-
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv3/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv3/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv3/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv3/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv3/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv3/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv3/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv3/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/CNT/Liv3/Lobule3/acinus2',
+female_cnt_paths = [
+    '/path/to/your/data/Female/CNT/Liv1/Lobule1/acinus0',
+    '/path/to/your/data/Female/CNT/Liv1/Lobule1/acinus1',
+    # add more paths as needed...
 ]
 
-female_stv_paths =[
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv1/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv1/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv1/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv1/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv1/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv1/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv1/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv1/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv1/Lobule3/acinus2',
-
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv2/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv2/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv2/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv2/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv2/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv2/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv2/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv2/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv2/Lobule3/acinus2',
-
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv4/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv4/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv4/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv4/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv4/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv4/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv4/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv4/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/STV/Liv4/Lobule3/acinus2',
+female_stv_paths = [
+    '/path/to/your/data/Female/STV/Liv1/Lobule1/acinus0',
+    '/path/to/your/data/Female/STV/Liv1/Lobule1/acinus1',
+    # add more paths as needed...
 ]
 
-female_wd_paths =[
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv1/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv1/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv1/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv1/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv1/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv1/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv1/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv1/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv1/Lobule3/acinus2',
-
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv2/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv2/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv2/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv2/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv2/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv2/Lobule2/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv2/Lobule3/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv2/Lobule3/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv2/Lobule3/acinus2',
-
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv3/Lobule1/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv3/Lobule1/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv3/Lobule1/acinus2',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv3/Lobule2/acinus0',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv3/Lobule2/acinus1',
-    '/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv3/Lobule2/acinus2',
-    #'/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv3/Lobule3/acinus0',
-    #'/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv3/Lobule3/acinus1',
-    #'/groups/feliciano/felicianolab/For_Alex_and_Mark/Female/WD/Liv3/Lobule3/acinus2',
+female_wd_paths = [
+    '/path/to/your/data/Female/WD/Liv1/Lobule1/acinus0',
+    '/path/to/your/data/Female/WD/Liv1/Lobule1/acinus1',
+    # add more paths as needed...
 ]
 
-liver_paths = male_cnt_paths + male_stv_paths + male_wd_paths + female_cnt_paths +female_stv_paths + female_wd_paths
+liver_paths = male_cnt_paths + male_stv_paths + male_wd_paths + female_cnt_paths + female_stv_paths + female_wd_paths
 # %%
