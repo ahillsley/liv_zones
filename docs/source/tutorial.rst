@@ -1,6 +1,43 @@
 Running liv_zones
 =================
 
+Interactive Jupyter Notebooks
+------------------------------
+
+The recommended way to learn ``liv_zones`` is through the interactive Jupyter notebooks
+in the ``notebooks/`` directory. They are designed for biologists and new Python users,
+with step-by-step explanations and inline visualisations.
+
++--------------------------------------------+-----------------------------------------------+
+| Notebook                                   | What it covers                                |
++============================================+===============================================+
+| ``notebooks/01_preprocessing.ipynb``       | Load images, run segmentation, compute        |
+|                                            | distance maps                                 |
++--------------------------------------------+-----------------------------------------------+
+| ``notebooks/02_feature_extraction.ipynb``  | Extract per-organelle and per-cell features   |
++--------------------------------------------+-----------------------------------------------+
+| ``notebooks/03_visualization.ipynb``       | Spatial trends, per-cell views, correlation   |
+|                                            | heatmap                                       |
++--------------------------------------------+-----------------------------------------------+
+
+A small sample dataset (``notebooks/sample_data/``) is provided so you can run the notebooks
+without access to the internal data server.
+
+.. note::
+
+   Notebook 1 requires a CUDA-capable GPU for the segmentation step.  If you do not have a GPU,
+   skip that section and use the pre-computed masks supplied in ``sample_data/output/``.
+
+To launch the notebooks::
+
+    cd notebooks/
+    jupyter notebook
+
+----
+
+Script-based workflow
+----------------------
+
 Before running the liv_zones processing it is important to make sure that your images are in the correct format 
 and that your folders are organized correctly
 
