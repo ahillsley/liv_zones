@@ -1,8 +1,11 @@
 import numpy as np
+from pathlib import Path
 
 from cellpose import models, utils
 from cellpose.io import imread
 import torch as torch
+
+_MODELS_DIR = Path(__file__).parent / "models"
 
 
 class OrganelleModel:
@@ -11,7 +14,7 @@ class OrganelleModel:
 
         if self.model_type == "cell":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="models/cell_model", device=torch.device("cuda")
+                pretrained_model=str(_MODELS_DIR / "cell_model"), device=torch.device("cuda")
             )
             self.flow = 0.4
             self.cell_prob = 0
@@ -20,7 +23,7 @@ class OrganelleModel:
         if self.model_type == "lipid_droplet":
             # handels small lipid droplets
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="models/lipid_droplet_model",
+                pretrained_model=str(_MODELS_DIR / "lipid_droplet_model"),
                 device=torch.device("cuda"),
             )
             self.flow = 0.3
@@ -30,7 +33,7 @@ class OrganelleModel:
         if self.model_type == "lipid_droplet_large":
             # handels large lipid droplets
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="models/lipid_droplet_model",
+                pretrained_model=str(_MODELS_DIR / "lipid_droplet_model"),
                 device=torch.device("cuda"),
             )
             self.flow = 0.3
@@ -39,7 +42,7 @@ class OrganelleModel:
 
         if self.model_type == "mito":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="models/mito_model", device=torch.device("cuda")
+                pretrained_model=str(_MODELS_DIR / "mito_model"), device=torch.device("cuda")
             )
             self.flow = 0
             self.cell_prob = -0.1
@@ -47,7 +50,7 @@ class OrganelleModel:
 
         if self.model_type == "peroxisome":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="models/peroxisome_model", device=torch.device("cuda")
+                pretrained_model=str(_MODELS_DIR / "peroxisome_model"), device=torch.device("cuda")
             )
             self.flow = 0
             self.cell_prob = -0.1
@@ -55,15 +58,18 @@ class OrganelleModel:
 
         if self.model_type == "nuclei":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="models/nuclei_model", device=torch.device("cuda")
+                pretrained_model=str(_MODELS_DIR / "nuclei_model"), device=torch.device("cuda")
             )
             self.flow = 0.4
             self.cell_prob = 0
             self.diameter = None
 
-    def segment(self, img_path, channel, save=True, save_path=""):
-        image = imread(img_path)
-        organelle_raw = image[channel, :, :]
+    def segment(self, img_path, channel=None, save=True, save_path=""):
+        if isinstance(img_path, np.ndarray):
+            organelle_raw = img_path
+        else:
+            image = imread(img_path)
+            organelle_raw = image[channel, :, :]
 
         organelle_mask = self.pretrained_model.eval(
             organelle_raw,

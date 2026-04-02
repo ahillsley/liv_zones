@@ -18,6 +18,24 @@ from liv_zones.distance_to_veins import main as vein_dist
 def preprocessing(image_path, save_path, channels, feature_list=None):
     # function to run segmentation of all organelles and get all
     # distance transforms needed for post_processing
+    #
+    # image_path can be either:
+    #   - a path to a single multi-channel TIF, with channel indices in `channels`
+    #   - a dict mapping channel names to individual single-channel TIF paths,
+    #     e.g. {"actin": Path(...), "mito": Path(...), "lipid": Path(...), "peroxi": Path(...)}
+    #     In the dict case, `channels` is ignored.
+
+    if isinstance(image_path, dict):
+        channel_arrays = {
+            name: val if isinstance(val, np.ndarray) else imread(str(val))
+            for name, val in image_path.items()
+        }
+
+        def get_img(name):
+            return channel_arrays[name]
+    else:
+        def get_img(name):
+            return image_path, channels[name]
 
     if feature_list is None:
         feature_list = file_check(save_path)
@@ -27,9 +45,10 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
     if "cell" in features:
         print("segmenting cells")
         cell_model = org_models.OrganelleModel("cell")
+        img = get_img("actin")
         cell_mask = cell_model.segment(
-            img_path=image_path,
-            channel=channels["actin"],
+            img_path=img if isinstance(img, np.ndarray) else img[0],
+            channel=None if isinstance(img, np.ndarray) else img[1],
             save=True,
             save_path=save_path,
         )
@@ -37,27 +56,29 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
     if "mito" in features:
         print("segmenting mitos")
         mito_model = org_models.OrganelleModel("mito")
+        img = get_img("mito")
         mito_mask = mito_model.segment(
-            img_path=image_path,
-            channel=channels["mito"],
+            img_path=img if isinstance(img, np.ndarray) else img[0],
+            channel=None if isinstance(img, np.ndarray) else img[1],
             save=True,
             save_path=save_path,
         )
 
     if "lipid" in features:
         print("segmenting lipid droplets")
+        img = get_img("lipid")
         lipid_model = org_models.OrganelleModel("lipid_droplet")
         small_lipid_mask = lipid_model.segment(
-            img_path=image_path,
-            channel=channels["lipid"],
+            img_path=img if isinstance(img, np.ndarray) else img[0],
+            channel=None if isinstance(img, np.ndarray) else img[1],
             save=False,
             save_path=save_path,
         )
 
         large_lipid_model = org_models.OrganelleModel("lipid_droplet_large")
         large_lipid_mask = large_lipid_model.segment(
-            img_path=image_path,
-            channel=channels["lipid"],
+            img_path=img if isinstance(img, np.ndarray) else img[0],
+            channel=None if isinstance(img, np.ndarray) else img[1],
             save=False,
             save_path=save_path,
         )
@@ -67,7 +88,7 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
         binary_large_lipid_mask[binary_large_lipid_mask != 0] = 1
 
         shifted_large_lipid_mask = (
-            binary_large_lipid_mask * small_lipid_mask[0].max() + large_lipid_mask
+            binary_large_lipid_mask * small_lipid_mask[0].max() + large_lipid_mask[0]
         )
 
         # when objects overlap between large and small masks, defer to large mask
@@ -81,9 +102,10 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
     if "perox" in features:
         print("segmenting peroxisomes")
         peroxisome_model = org_models.OrganelleModel("peroxisome")
+        img = get_img("peroxi")
         peroxisome_mask = peroxisome_model.segment(
-            img_path=image_path,
-            channel=channels["peroxi"],
+            img_path=img if isinstance(img, np.ndarray) else img[0],
+            channel=None if isinstance(img, np.ndarray) else img[1],
             save=True,
             save_path=save_path,
         )
@@ -91,9 +113,10 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
     if "nuclei" in features:
         print("segmenting nuclei")
         nuclei_model = org_models.OrganelleModel("nuclei")
+        img = get_img("nuclei")
         nuclei_mask = nuclei_model.segment(
-            img_path=image_path,
-            channel=channels["nuclei"],
+            img_path=img if isinstance(img, np.ndarray) else img[0],
+            channel=None if isinstance(img, np.ndarray) else img[1],
             save=True,
             save_path=save_path,
         )
