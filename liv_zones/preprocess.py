@@ -1,41 +1,28 @@
 import numpy as np
+from numpy import asarray
+import cv2 as cv
+from PIL import Image
+
 import glob
 import warnings
 from scipy.ndimage import distance_transform_edt  # uninstall and re-install
 
 warnings.filterwarnings("ignore")
 
-from cellpose import models, utils
+from cellpose import models, utils, plot
 from cellpose.io import imread
+
 
 from liv_zones import organelle_model as org_models
 from liv_zones.distance_to_veins import main as vein_dist
-
+import os
+import torch
 
 # Always define save path not including the last /
-
 
 def preprocessing(image_path, save_path, channels, feature_list=None):
     # function to run segmentation of all organelles and get all
     # distance transforms needed for post_processing
-    #
-    # image_path can be either:
-    #   - a path to a single multi-channel TIF, with channel indices in `channels`
-    #   - a dict mapping channel names to individual single-channel TIF paths,
-    #     e.g. {"actin": Path(...), "mito": Path(...), "lipid": Path(...), "peroxi": Path(...)}
-    #     In the dict case, `channels` is ignored.
-
-    if isinstance(image_path, dict):
-        channel_arrays = {
-            name: val if isinstance(val, np.ndarray) else imread(str(val))
-            for name, val in image_path.items()
-        }
-
-        def get_img(name):
-            return channel_arrays[name]
-    else:
-        def get_img(name):
-            return image_path, channels[name]
 
     if feature_list is None:
         feature_list = file_check(save_path)
@@ -45,67 +32,98 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
     if "cell" in features:
         print("segmenting cells")
         cell_model = org_models.OrganelleModel("cell")
-        img = get_img("actin")
         cell_mask = cell_model.segment(
-            img_path=img if isinstance(img, np.ndarray) else img[0],
-            channel=None if isinstance(img, np.ndarray) else img[1],
+            img_path=image_path,
+            channel=channels["actin"],
             save=True,
             save_path=save_path,
         )
+
+        corrected_cell_mask = remove_small_masks(save_path=save_path, save=True,)
+
+    
 
     if "mito" in features:
         print("segmenting mitos")
         mito_model = org_models.OrganelleModel("mito")
-        img = get_img("mito")
         mito_mask = mito_model.segment(
-            img_path=img if isinstance(img, np.ndarray) else img[0],
-            channel=None if isinstance(img, np.ndarray) else img[1],
+            img_path=image_path,
+            channel=channels["mito"],
             save=True,
             save_path=save_path,
+
         )
 
     if "lipid" in features:
         print("segmenting lipid droplets")
-        img = get_img("lipid")
-        lipid_model = org_models.OrganelleModel("lipid_droplet")
-        small_lipid_mask = lipid_model.segment(
-            img_path=img if isinstance(img, np.ndarray) else img[0],
-            channel=None if isinstance(img, np.ndarray) else img[1],
-            save=False,
-            save_path=save_path,
-        )
+        lipid_model_small = org_models.OrganelleModel("lipid_droplet_Small")
+        lipid_mask_small = lipid_model_small.segment(
 
-        large_lipid_model = org_models.OrganelleModel("lipid_droplet_large")
-        large_lipid_mask = large_lipid_model.segment(
-            img_path=img if isinstance(img, np.ndarray) else img[0],
-            channel=None if isinstance(img, np.ndarray) else img[1],
-            save=False,
-            save_path=save_path,
-        )
+            img_path=image_path,
+            channel=channels["lipid"],
+            save=True,
+            save_path=save_path,)
+        
+        lipid_model_medium = org_models.OrganelleModel("lipid_droplet_Medium")
+        lipid_mask_medium = lipid_model_medium.segment(
 
-        # shift labels of all objects in large_lipid_mask
-        binary_large_lipid_mask = np.copy(large_lipid_mask[0])
-        binary_large_lipid_mask[binary_large_lipid_mask != 0] = 1
+            img_path=image_path,
+            channel=channels["lipid"],
+            save=True,
+            save_path=save_path,)
+        
+        lipid_model_large = org_models.OrganelleModel("lipid_droplet_Large")
+        lipid_mask_large = lipid_model_large.segment(
+             img_path=image_path,
+            channel=channels["lipid"],
+            save=True,
+            save_path=save_path,)
+         
+        #Using the Combining_lipid_droplets function combine the mask of 
+        #small and large lipid droplets (Here also a .png 
+        # of large, small and combine droplets masks is saved)
+        
+        lipid_mask_small_sm = f"{save_path}/lipid_droplet_Small_mask.npy"
+        Small_droplets_array = np.load(lipid_mask_small_sm)
+        #Small_droplets= cv.imread(lipid_mask_small_sm)
+        #Small_droplets_array = asarray(Small_droplets)
+        #SLD = Image.fromarray(Small_droplets_array)
+        #SLD.save(f"{save_path}/small_lipid_droplets_mask.png")
+        
+        
+        lipid_mask_large_lg = f"{save_path}/lipid_droplet_Large_mask.npy"
+        Large_droplets_array_pre = np.load(lipid_mask_large_lg)
+        Large_droplets_array = (Large_droplets_array_pre * (80)) 
+        #Large_droplets= cv.imread(lipid_mask_large_lg)
+        #Large_droplets_array = asarray(Large_droplets) #* 70 this multiplication helps visuslize the large droplets
+        #LLD = Image.fromarray(Large_droplets_array) 
+        #LLD.save(f"{save_path}/large_lipid_droplets_mask.png")
+        
+       
+        lipid_mask_medium_md = f"{save_path}/lipid_droplet_Medium_mask.npy"
+        Medium_droplets_array_pre = np.load(lipid_mask_medium_md)
+        Medium_droplets_array = (Medium_droplets_array_pre * (10)) 
 
-        shifted_large_lipid_mask = (
-            binary_large_lipid_mask * small_lipid_mask[0].max() + large_lipid_mask[0]
-        )
+        #Generating a medium + small image by np.add
+        Medium_and_Small_c = np.add(Small_droplets_array, Medium_droplets_array)
+        np.save(f"{save_path}/lipid_droplet_mask_MS.npy", Medium_and_Small_c)
 
-        # when objects overlap between large and small masks, defer to large mask
-        overlap_small_lipid_mask = np.copy(small_lipid_mask[0])
-        overlap_small_lipid_mask[binary_large_lipid_mask == 1] = 0
+        Medium_and_Small_p = f"{save_path}/lipid_droplet_mask_MS.npy"
+        Medium_and_Small = np.load(Medium_and_Small_p)
 
-        total_lipid_mask = overlap_small_lipid_mask + shifted_large_lipid_mask
-
-        np.save(f"{save_path}/lipid_droplet_mask.npy", total_lipid_mask)
-
+        #Generate the final mask containing small, medium ,and large lipid droplets
+    
+        lipid_mask = Combining_lipid_droplets(Medium_and_Small, Large_droplets_array,
+            save=True,
+            save_path=save_path, )
+        #----------------------------------------------------------------------
+     
     if "perox" in features:
         print("segmenting peroxisomes")
         peroxisome_model = org_models.OrganelleModel("peroxisome")
-        img = get_img("peroxi")
         peroxisome_mask = peroxisome_model.segment(
-            img_path=img if isinstance(img, np.ndarray) else img[0],
-            channel=None if isinstance(img, np.ndarray) else img[1],
+            img_path=image_path,
+            channel=channels["peroxi"],
             save=True,
             save_path=save_path,
         )
@@ -113,17 +131,16 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
     if "nuclei" in features:
         print("segmenting nuclei")
         nuclei_model = org_models.OrganelleModel("nuclei")
-        img = get_img("nuclei")
         nuclei_mask = nuclei_model.segment(
-            img_path=img if isinstance(img, np.ndarray) else img[0],
-            channel=None if isinstance(img, np.ndarray) else img[1],
+            img_path=image_path,
+            channel=channels["nuclei"],
             save=True,
             save_path=save_path,
         )
 
     if "central" in features or "portal" in features:
         print("calculating distance to central and portal veins")
-        vein_distance = vein_dist(f"{save_path}/mito_mask.npy", save_path)
+        vein_distance = vein_dist(f'{save_path}/mito_mask.npy', save_path)
 
     if "bound" in features:
         print("calculating distance to cell boundary")
@@ -131,7 +148,27 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
 
     return
 
+# Funtion to add 2 masks from small and large lipid droplets
 
+def Combining_lipid_droplets(image1,image2,save=True, save_path=""):
+
+  
+   All_lipid_droplets = np.add(image1,image2)
+   
+   if save is True:
+       np.save(f"{save_path}/lipid_droplet_mask.npy", All_lipid_droplets)
+    
+       combine = Image.fromarray(All_lipid_droplets) 
+       combine.save(f"{save_path}/lipid_droplets_mask.png")
+       
+   return All_lipid_droplets
+    
+  
+#--------------------------------------------------------------------------
+
+
+
+#--------------------------------------------------------------------------
 def file_check(path):
     # check if any files are missing
 
@@ -143,7 +180,7 @@ def file_check(path):
         "mito_mask.npy",
         "lipid_droplet_mask.npy",
         "peroxisome_mask.npy",
-        "nuclei_mask.npy",
+        #"nuclei_mask.npy",
         "central_dist.npy",
         "portal_dist.npy",
         "boundary_dist.npy",
@@ -180,3 +217,41 @@ def cell_edge_distance(save_path):
 
     np.save(f"{save_path}/boundary_dist.npy", dist_transform)
     return
+
+
+def remove_small_masks(save_path, save=True):
+   
+    os.mkdir(f'{save_path}/small_cells_filtering/')
+
+    img = np.load(f"{save_path}/cell_mask.npy")
+    np.save(f"{save_path}/small_cells_filtering/pre_cell_mask.npy", img)
+    To_PNG_1 = Image.fromarray(img) 
+    To_PNG_1.save(f"{save_path}/small_cells_filtering/pre_cell_mask.png")
+    torch.cuda.empty_cache()
+
+    img2 = np.load(f"{save_path}/cell_mask.npy") 
+
+    corrected = utils.fill_holes_and_remove_small_masks(img2, min_size=110000)
+    np.save(f"{save_path}/small_cells_filtering/corrected_cell_mask.npy", corrected)
+   
+    color_mask = plot.mask_rgb(corrected)
+    color = Image.fromarray(color_mask) 
+    color.save(f"{save_path}/small_cells_filtering/color_cell_mask.png")
+   
+    To_PNG_2 = Image.fromarray(corrected) 
+    To_PNG_2.save(f"{save_path}/small_cells_filtering/corrected_cell_mask.png")
+    torch.cuda.empty_cache()
+    
+    if save is True:
+        cell_mask = np.load(f"{save_path}/small_cells_filtering/corrected_cell_mask.npy")
+        np.save(f"{save_path}/cell_mask.npy", cell_mask)
+        
+        
+    return 
+
+
+if __name__ == "__main__":
+    test_img_path = ""
+    path = "../test_set"
+    a = file_check(path)
+    preprocess(test_img_path, path, a)

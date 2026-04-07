@@ -9,19 +9,30 @@ from liv_zones import organelle as org
 mito_properties = [
     "mito_density",
     "mito_avg_area",
+    "mito_perimeter",
     "mito_percent_total_area",
     "mito_distance_from_edge",
     "mito_aspect_ratio",
+    "mito_circularity",
     "mito_solidity",
     "type_1_mito_density",
     "type_2_mito_density",
     "type_3_mito_density",
+    "type_1_mito_perimeter",
+    "type_2_mito_perimeter",
+    "type_3_mito_perimeter",
     "type_1_mito_avg_area",
     "type_2_mito_avg_area",
     "type_3_mito_avg_area",
     "type_1_mito_avg_aspect_ratio",
     "type_2_mito_avg_aspect_ratio",
     "type_3_mito_avg_aspect_ratio",
+    "type_1_mito_avg_solidity",
+    "type_2_mito_avg_solidity",
+    "type_3_mito_avg_solidity",
+    "type_1_mito_avg_circularity",
+    "type_2_mito_avg_circularity",
+    "type_3_mito_avg_circularity",
     "type_1_mito_percent_total_area",
     "type_2_mito_percent_total_area",
     "type_3_mito_percent_total_area",
@@ -36,41 +47,77 @@ mito_properties = [
 lipid_droplet_properties = [
     "ld_density",
     "ld_avg_area",
+    "ld_perimeter",
     "ld_percent_total_area",
     "ld_distance_from_edge",
+    "ld_aspect_ratio",
+    "ld_circularity",
+    "ld_solidity",
     "type_1_ld_density",
     "type_2_ld_density",
     "type_3_ld_density",
+    "type_4_ld_density",
+    "type_1_ld_perimeter",
+    "type_2_ld_perimeter",
+    "type_3_ld_perimeter",
+    "type_4_ld_perimeter",
     "type_1_ld_avg_area",
     "type_2_ld_avg_area",
     "type_3_ld_avg_area",
+    "type_4_ld_avg_area",
+    "type_1_ld_avg_aspect_ratio",
+    "type_2_ld_avg_aspect_ratio",
+    "type_3_ld_avg_aspect_ratio",
+    "type_4_ld_avg_aspect_ratio",
+    "type_1_ld_avg_solidity",
+    "type_2_ld_avg_solidity",
+    "type_3_ld_avg_solidity",
+    "type_4_ld_avg_solidity",
+    "type_1_ld_avg_circularity",
+    "type_2_ld_avg_circularity",
+    "type_3_ld_avg_circularity",
+    "type_4_ld_avg_circularity",
     "type_1_ld_percent_total_area",
     "type_2_ld_percent_total_area",
     "type_3_ld_percent_total_area",
+    "type_4_ld_percent_total_area",
     "percent_type_1_ld",
     "percent_type_2_ld",
     "percent_type_3_ld",
+    "percent_type_4_ld",
     "type_1_ld_dist_from_edge",
     "type_2_ld_dist_from_edge",
     "type_3_ld_dist_from_edge",
+    "type_4_ld_dist_from_edge",
 ]
 
 peroxisome_properties = [
     "peroxisome_density",
     "peroxisome_avg_area",
+    "peroxisome_perimeter",
     "peroxisome_percent_total_area",
     "peroxisome_distance_from_edge",
     "peroxisome_aspect_ratio",
+    "peroxisome_circularity",
     "peroxisome_solidity",
     "type_1_peroxisome_density",
     "type_2_peroxisome_density",
     "type_3_peroxisome_density",
+    "type_1_peroxisome_perimeter",
+    "type_2_peroxisome_perimeter",
+    "type_3_peroxisome_perimeter",
     "type_1_peroxisome_avg_area",
     "type_2_peroxisome_avg_area",
     "type_3_peroxisome_avg_area",
     "type_1_peroxisome_avg_aspect_ratio",
     "type_2_peroxisome_avg_aspect_ratio",
     "type_3_peroxisome_avg_aspect_ratio",
+    "type_1_peroxisome_avg_solidity",
+    "type_2_peroxisome_avg_solidity",
+    "type_3_peroxisome_avg_solidity",
+    "type_1_peroxisome_avg_circularity",
+    "type_2_peroxisome_avg_circularity",
+    "type_3_peroxisome_avg_circularity",
     "type_1_peroxisome_percent_total_area",
     "type_2_peroxisome_percent_total_area",
     "type_3_peroxisome_percent_total_area",
@@ -84,10 +131,12 @@ peroxisome_properties = [
 
 nuclei_properties = [
     "nuclei_density",
+    "nuclei_perimeter",
     "nuclei_avg_area",
     "nuclei_percent_total_area",
     "nuclei_distance_from_edge",
     "nuclei_aspect_ratio",
+    "nuclei_circularity",
 ]
 
 
@@ -146,7 +195,7 @@ def cell_props(
 ):
 
     cell_props_dict = regionprops_table(
-        masks.cell_mask, properties=("area", "centroid", "label")
+        masks.cell_mask, properties=("area", "centroid", "label") #need to add aspect ratio and perimeter
     )
 
     cell_props_1 = pd.DataFrame.from_dict(cell_props_dict)
@@ -174,10 +223,12 @@ def cell_props(
 
             cell_props["mito_density"][index] = organelles.density("mito")
             cell_props["mito_avg_area"][index] = organelles.avg_area("mito")
+            cell_props["mito_perimeter"][index] = organelles.avg_perimeter("mito")
             cell_props["mito_percent_total_area"][
                 index
             ] = organelles.percent_total_area("mito")
             cell_props["mito_aspect_ratio"][index] = organelles.aspect_ratio("mito")
+            cell_props["mito_circularity"][index] = organelles.avg_circularity("mito")
             cell_props["mito_solidity"][index] = organelles.solidity("mito")
             cell_props["mito_distance_from_edge"][
                 index
@@ -190,6 +241,17 @@ def cell_props(
                 "mito", 2
             )
             cell_props["type_3_mito_density"][index] = organelles.type_density(
+                "mito", 3
+            )
+            
+            
+            cell_props["type_1_mito_perimeter"][index] = organelles.type_perimeter(
+                "mito", 1
+            )
+            cell_props["type_2_mito_perimeter"][index] = organelles.type_perimeter(
+                "mito", 2
+            )
+            cell_props["type_3_mito_perimeter"][index] = organelles.type_perimeter(
                 "mito", 3
             )
 
@@ -212,6 +274,26 @@ def cell_props(
             cell_props["type_3_mito_avg_aspect_ratio"][
                 index
             ] = organelles.type_aspect_ratio("mito", 3)
+
+            cell_props["type_1_mito_avg_solidity"][
+                index
+            ] = organelles.type_solidity("mito", 1)
+            cell_props["type_2_mito_avg_solidity"][
+                index
+            ] = organelles.type_solidity("mito", 2)
+            cell_props["type_3_mito_avg_solidity"][
+                index
+            ] = organelles.type_solidity("mito", 3)
+
+            cell_props["type_1_mito_avg_circularity"][
+                index
+            ] = organelles.type_circularity("mito", 1)
+            cell_props["type_2_mito_avg_circularity"][
+                index
+            ] = organelles.type_circularity("mito", 2)
+            cell_props["type_3_mito_avg_circularity"][
+                index
+            ] = organelles.type_circularity("mito", 3)
 
             cell_props["type_1_mito_percent_total_area"][
                 index
@@ -252,9 +334,13 @@ def cell_props(
 
             cell_props["ld_density"][index] = organelles.density("ld")
             cell_props["ld_avg_area"][index] = organelles.avg_area("ld")
+            cell_props["ld_perimeter"][index] = organelles.avg_perimeter("ld")
             cell_props["ld_percent_total_area"][index] = organelles.percent_total_area(
                 "ld"
             )
+            cell_props["ld_aspect_ratio"][index] = organelles.aspect_ratio("ld")
+            cell_props["ld_circularity"][index] = organelles.avg_circularity("ld")
+            cell_props["ld_solidity"][index] = organelles.solidity("ld")
             cell_props["ld_distance_from_edge"][index] = organelles.distance_from_edge(
                 "ld"
             )
@@ -262,10 +348,32 @@ def cell_props(
             cell_props["type_1_ld_density"][index] = organelles.type_density("ld", 1)
             cell_props["type_2_ld_density"][index] = organelles.type_density("ld", 2)
             cell_props["type_3_ld_density"][index] = organelles.type_density("ld", 3)
+            cell_props["type_4_ld_density"][index] = organelles.type_density("ld", 4)
+            
+            cell_props["type_1_ld_perimeter"][index] = organelles.type_perimeter("ld", 1)
+            cell_props["type_2_ld_perimeter"][index] = organelles.type_perimeter("ld", 2)
+            cell_props["type_3_ld_perimeter"][index] = organelles.type_perimeter("ld", 3)
+            cell_props["type_4_ld_perimeter"][index] = organelles.type_perimeter("ld", 4)
 
             cell_props["type_1_ld_avg_area"][index] = organelles.type_avg_area("ld", 1)
             cell_props["type_2_ld_avg_area"][index] = organelles.type_avg_area("ld", 2)
             cell_props["type_3_ld_avg_area"][index] = organelles.type_avg_area("ld", 3)
+            cell_props["type_4_ld_avg_area"][index] = organelles.type_avg_area("ld", 4)
+
+            cell_props["type_1_ld_avg_aspect_ratio"][index] = organelles.type_aspect_ratio("ld", 1)
+            cell_props["type_2_ld_avg_aspect_ratio"][index] = organelles.type_aspect_ratio("ld", 2)
+            cell_props["type_3_ld_avg_aspect_ratio"][index] = organelles.type_aspect_ratio("ld", 3)
+            cell_props["type_4_ld_avg_aspect_ratio"][index] = organelles.type_aspect_ratio("ld", 4)
+            
+            cell_props["type_1_ld_avg_solidity"][index] = organelles.type_solidity("ld", 1)
+            cell_props["type_2_ld_avg_solidity"][index] = organelles.type_solidity("ld", 2)
+            cell_props["type_3_ld_avg_solidity"][index] = organelles.type_solidity("ld", 3)
+            cell_props["type_4_ld_avg_solidity"][index] = organelles.type_solidity("ld", 4)
+            
+            cell_props["type_1_ld_avg_circularity"][index] = organelles.type_circularity("ld", 1)
+            cell_props["type_2_ld_avg_circularity"][index] = organelles.type_circularity("ld", 2)
+            cell_props["type_3_ld_avg_circularity"][index] = organelles.type_circularity("ld", 3)
+            cell_props["type_4_ld_avg_circularity"][index] = organelles.type_circularity("ld", 4)
 
             cell_props["type_1_ld_percent_total_area"][
                 index
@@ -276,6 +384,9 @@ def cell_props(
             cell_props["type_3_ld_percent_total_area"][
                 index
             ] = organelles.type_percent_total_area("ld", 3)
+            cell_props["type_4_ld_percent_total_area"][
+                index
+            ] = organelles.type_percent_total_area("ld", 4)
 
             cell_props["percent_type_1_ld"][index] = organelles.type_percent_organelles(
                 "ld", 1
@@ -285,6 +396,9 @@ def cell_props(
             )
             cell_props["percent_type_3_ld"][index] = organelles.type_percent_organelles(
                 "ld", 3
+            )
+            cell_props["percent_type_4_ld"][index] = organelles.type_percent_organelles(
+                "ld", 4
             )
 
             cell_props["type_1_ld_dist_from_edge"][
@@ -296,6 +410,9 @@ def cell_props(
             cell_props["type_3_ld_dist_from_edge"][
                 index
             ] = organelles.type_dist_from_edge("ld", 3)
+            cell_props["type_4_ld_dist_from_edge"][
+                index
+            ] = organelles.type_dist_from_edge("ld", 4)
 
         # Peroxisome Properties
         # ---------------------
@@ -306,12 +423,14 @@ def cell_props(
 
             cell_props["peroxisome_density"][index] = organelles.density("peroxi")
             cell_props["peroxisome_avg_area"][index] = organelles.avg_area("peroxi")
+            cell_props["peroxisome_perimeter"][index] = organelles.avg_perimeter("peroxi")
             cell_props["peroxisome_percent_total_area"][
                 index
             ] = organelles.percent_total_area("peroxi")
             cell_props["peroxisome_aspect_ratio"][index] = organelles.aspect_ratio(
                 "peroxi"
             )
+            cell_props["peroxisome_circularity"][index] = organelles.avg_circularity("peroxi")
             cell_props["peroxisome_solidity"][index] = organelles.solidity("peroxi")
             cell_props["peroxisome_distance_from_edge"][
                 index
@@ -324,6 +443,16 @@ def cell_props(
                 "peroxi", 2
             )
             cell_props["type_3_peroxisome_density"][index] = organelles.type_density(
+                "peroxi", 3
+            )
+            
+            cell_props["type_1_peroxisome_perimeter"][index] = organelles.type_perimeter(
+                "peroxi", 1
+            )
+            cell_props["type_2_peroxisome_perimeter"][index] = organelles.type_perimeter(
+                "peroxi", 2
+            )
+            cell_props["type_3_peroxisome_perimeter"][index] = organelles.type_perimeter(
                 "peroxi", 3
             )
 
@@ -346,6 +475,14 @@ def cell_props(
             cell_props["type_3_peroxisome_avg_aspect_ratio"][
                 index
             ] = organelles.type_aspect_ratio("peroxi", 3)
+
+            cell_props["type_1_peroxisome_avg_solidity"][index] = organelles.type_solidity("peroxi", 1)
+            cell_props["type_2_peroxisome_avg_solidity"][index] = organelles.type_solidity("peroxi", 2)
+            cell_props["type_3_peroxisome_avg_solidity"][index] = organelles.type_solidity("peroxi", 3)
+
+            cell_props["type_1_peroxisome_avg_circularity"][index] = organelles.type_circularity("peroxi", 1)
+            cell_props["type_2_peroxisome_avg_circularity"][index] = organelles.type_circularity("peroxi", 2)
+            cell_props["type_3_peroxisome_avg_circularity"][index] = organelles.type_circularity("peroxi", 3)
 
             cell_props["type_1_peroxisome_percent_total_area"][
                 index
@@ -383,11 +520,13 @@ def cell_props(
             ]
 
             cell_props["nuclei_density"][index] = organelles.density("nuclei")
+            cell_props["nuclei_perimeter"][index] = organelles.avg_perimeter("nuclei")
             cell_props["nuclei_avg_area"][index] = organelles.avg_area("nuclei")
             cell_props["nuclei_percent_total_area"][
                 index
             ] = organelles.percent_total_area("nuclei")
             cell_props["nuclei_aspect_ratio"][index] = organelles.aspect_ratio("nuclei")
+            cell_props["nuclei_circularity"][index] = organelles.avg_circularity("nuclei")
             cell_props["nuclei_distance_from_edge"][
                 index
             ] = organelles.distance_from_edge("nuclei")
@@ -426,6 +565,20 @@ class OrganelleFuncs:
         self.single_cell_peroxisomes = None
         self.single_cell_nuclei = None
 
+    def avg_circularity(self, organelle):
+        if organelle == "mito":
+            return np.mean(self.single_cell_mitos["circularity"])
+
+        elif organelle == "ld":
+            return np.mean(self.single_cell_lipid_droplets["circularity"])
+
+        elif organelle == "peroxi":
+            return np.mean(self.single_cell_peroxisomes["circularity"])
+
+        elif organelle == "nuclei":
+            return np.mean(self.single_cell_nuclei["circularity"])
+       
+        
     def density(self, organelle, org_type=False):
         if organelle == "mito":
             organelle_count = len(self.single_cell_mitos)
@@ -453,6 +606,21 @@ class OrganelleFuncs:
 
         elif organelle == "nuclei":
             return np.mean(self.single_cell_nuclei["area"])
+    
+    
+    def avg_perimeter(self, organelle):
+        if organelle == "mito":
+            return np.mean(self.single_cell_mitos["perimeter"])
+
+        elif organelle == "ld":
+            return np.mean(self.single_cell_lipid_droplets["perimeter"])
+
+        elif organelle == "peroxi":
+            return np.mean(self.single_cell_peroxisomes["perimeter"])
+
+        elif organelle == "nuclei":
+            return np.mean(self.single_cell_nuclei["perimeter"])
+        
 
     def percent_total_area(self, organelle):
         if organelle == "mito":
@@ -475,6 +643,9 @@ class OrganelleFuncs:
 
         elif organelle == "peroxi":
             return np.mean(self.single_cell_peroxisomes["aspect_ratio"])
+        
+        elif organelle == "ld":
+            return np.mean(self.single_cell_lipid_droplets["aspect_ratio"])
 
         elif organelle == "nuclei":
             return np.mean(self.single_cell_nuclei["aspect_ratio"])
@@ -485,6 +656,9 @@ class OrganelleFuncs:
 
         elif organelle == "peroxi":
             return np.mean(self.single_cell_peroxisomes["solidity"])
+        
+        elif organelle == "ld":
+            return np.mean(self.single_cell_lipid_droplets["solidity"])
 
     def distance_from_edge(self, organelle):
         if organelle == "mito":
@@ -530,14 +704,58 @@ class OrganelleFuncs:
             subset = self.single_cell_peroxisomes[f"aspect_type_{org_type}"]
             return np.mean(self.single_cell_peroxisomes["area"][subset])
 
+        
+    def type_perimeter(self, organelle, org_type):
+        if organelle == "mito":
+            subset = self.single_cell_mitos[f"aspect_type_{org_type}"]
+            return np.mean(self.single_cell_mitos["perimeter"][subset])
+
+        elif organelle == "ld":
+            subset = self.single_cell_lipid_droplets[f"area_type_{org_type}"]
+            return np.mean(self.single_cell_lipid_droplets["perimeter"][subset])
+
+        elif organelle == "peroxi":
+            subset = self.single_cell_peroxisomes[f"aspect_type_{org_type}"]
+            return np.mean(self.single_cell_peroxisomes["perimeter"][subset])
+
     def type_aspect_ratio(self, organelle, org_type):
         if organelle == "mito":
             subset = self.single_cell_mitos[f"aspect_type_{org_type}"]
             return np.mean(self.single_cell_mitos["aspect_ratio"][subset])
+        
+        elif organelle == "ld":
+            subset = self.single_cell_lipid_droplets[f"area_type_{org_type}"]
+            return np.mean(self.single_cell_lipid_droplets["aspect_ratio"][subset])
 
-        if organelle == "peroxi":
+        elif organelle == "peroxi":
+            subset = self.single_cell_peroxisomes[f"aspect_type_{org_type}"]
+            return np.mean(self.single_cell_peroxisomes["aspect_ratio"][subset])
+        
+    def type_solidity(self, organelle, org_type):
+        if organelle == "mito":
             subset = self.single_cell_mitos[f"aspect_type_{org_type}"]
-            return np.mean(self.single_cell_mitos["aspect_ratio"][subset])
+            return np.mean(self.single_cell_mitos["solidity"][subset])
+        
+        elif organelle == "ld":
+            subset = self.single_cell_lipid_droplets[f"area_type_{org_type}"]
+            return np.mean(self.single_cell_lipid_droplets["solidity"][subset])
+
+        elif organelle == "peroxi":
+            subset = self.single_cell_peroxisomes[f"aspect_type_{org_type}"]
+            return np.mean(self.single_cell_peroxisomes["solidity"][subset])
+        
+    def type_circularity(self, organelle, org_type):
+        if organelle == "mito":
+            subset = self.single_cell_mitos[f"aspect_type_{org_type}"]
+            return np.mean(self.single_cell_mitos["circularity"][subset])
+        
+        elif organelle == "ld":
+            subset = self.single_cell_lipid_droplets[f"area_type_{org_type}"]
+            return np.mean(self.single_cell_lipid_droplets["circularity"][subset])
+
+        elif organelle == "peroxi":
+            subset = self.single_cell_peroxisomes[f"aspect_type_{org_type}"]
+            return np.mean(self.single_cell_peroxisomes["circularity"][subset])
 
     def type_percent_total_area(self, organelle, org_type):
         if organelle == "mito":
@@ -597,6 +815,10 @@ class OrganelleFuncs:
 
         return dist_from_edge(self.cell_props.iloc[self.index], subset)
 
+# def Circularities(Area, Perimeter):
+#     Cir = (4 * np.pi * props['Area']) / (props['Perimeter'] ** 2)
+
+#     return Cir
 
 def dist_from_edge(cell, organelle_list):
     cc_x = float(cell["centroid-0"])
