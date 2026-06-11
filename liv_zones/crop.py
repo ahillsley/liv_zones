@@ -1,13 +1,14 @@
 # Diagonal Crop
 
 import os, pickle, math, collections, numpy as np
-from PIL import Image
-
+from PIL import Image, ImageFilter
+import cv2 as cv
 Image.MAX_IMAGE_PIXELS = 500000000
 from scipy import ndimage
 from matplotlib import patches
 import tifffile
 import glob
+from skimage.morphology import disk
 from liv_zones import paths
 
 _Point = collections.namedtuple("Point", ["x", "y"])
@@ -152,13 +153,13 @@ def dispCrop(img, CV_coords=None, PV_coords=None, crop_info=None):
             np.round(np.pi - asinus_theta, 5),
             base,
             int(0.4 * asinus_dist),
-            int(1.2 * asinus_dist),
+            int(1.4 * asinus_dist),
         )
         crop_info = {
             "base": box.get_corners()[2],
             "angle": np.round(np.pi - asinus_theta, 5),
             "height": int(0.4 * asinus_dist),
-            "width": int(1.2 * asinus_dist),
+            "width": int(1.4 * asinus_dist),
             "points": points,
         }
     # crop image according to bounding box
@@ -227,11 +228,27 @@ def getOrgStacks(organelle_dir, channels, nSlices, stackNum, crop_info):
         zstack = np.zeros(
             (nSlices, crop_info["height"], crop_info["width"]), dtype="uint16"
         )
+        zstack1 = np.zeros(
+            (nSlices, crop_info["height"], crop_info["width"]), dtype="uint16"
+        )
 
         # iterate through and gather each z slice for channel
         for j in range(nSlices):
             asinus_slice = Image.open(org_files[nSlices * stackNum + j])
-            asinus, box = dispCrop(asinus_slice, crop_info=crop_info)
+        
+            asinusa, box = dispCrop(asinus_slice, crop_info=crop_info)
+
+           # Individual median filter for image and blur_image 
+            image =  Image.fromarray(np.uint8(asinusa)) #need to be uint8
+            image1 = image.filter(ImageFilter.MedianFilter(1))
+            image2 = image.filter(ImageFilter.MedianFilter(3))
+
+           # Blur Image for later substraction 
+            image3 = image2.filter(ImageFilter.GaussianBlur(150))
+           # comvert both image and blur_image to uint16 np array
+            asinus1 = np.asarray(image3, dtype="uint16")
+            asinus = np.asarray(image1, dtype="uint16")  
+
             if asinus.shape > zstack[i].shape:
                 asinus = asinus[: zstack.shape[1], : zstack.shape[2]]
             elif asinus.shape < zstack[i].shape:
@@ -244,11 +261,41 @@ def getOrgStacks(organelle_dir, channels, nSlices, stackNum, crop_info):
                     "constant",
                     constant_values=0,
                 )
-            zstack[j] = asinus
 
-        asinus_maxproj[i] = ndimage.median_filter(np.max(zstack, axis=0), size=1)
+            if asinus1.shape > zstack1[i].shape:
+                asinus1 = asinus1[: zstack1.shape[1], : zstack1.shape[2]]
+            elif asinus1.shape < zstack1[i].shape:
+                asinus1 = np.pad(
+                    asinus1,
+                    (
+                        (0, zstack1.shape[1] - asinus1.shape[0]),
+                        (0, zstack1.shape[2] - asinus1.shape[1]),
+                    ),
+                    "constant",
+                    constant_values=0,
+                )
+            
+            zstack[j] = asinus
+            zstack1[j] = asinus1
+            
+            
+        asinus_maxproj[i] = corrections(zstack, zstack1)
+        #asinus_maxproj[i] = ndimage.median_filter(np.max(zstack1, axis=0), size=3) # median filter of 3 is best
 
     return asinus_maxproj
+
+def corrections(image,image_blur):
+    image1 = np.asarray(image, dtype="uint8")
+    image2 = np.asarray(image_blur, dtype="uint8")
+    image3 = cv.subtract(image1, image2)
+    image3a = np.asarray(image3, dtype="uint8") #* 2
+    image4a = cv.subtract(image3a, image2)
+   
+    #nested median filters to smooth out final image
+    image4aa = ndimage.median_filter(np.max(image4a, axis=0), size=4) # median filter of 3 is best
+    image4 = ndimage.median_filter(image4aa, size=1) # median filter of 3 is best
+    
+    return image4 #image6
 
 
 def makeAcinusDir(lobule_dir, asinusNum):
@@ -261,13 +308,13 @@ def makeAcinusDir(lobule_dir, asinusNum):
     return acinus_dir
 
 
-def outputTIFs(acinus_dir, stackNum, asinusNum, DAPI_max, asinus_maxproj):
+def outputTIFs(acinus_dir, stackNum, asinusNum, asinus_maxproj): #def outputTIFs(acinus_dir, stackNum, asinusNum, DAPI_max, asinus_maxproj):
     stack_dir = f"{acinus_dir}/stack{stackNum}"
     if not os.path.exists(stack_dir):
         os.mkdir(stack_dir)
-    tifffile.imwrite(
-        f"{stack_dir}/stack{stackNum}_DAPI.tif", DAPI_max, photometric="minisblack"
-    )
+    #tifffile.imwrite(
+        #f"{stack_dir}/stack{stackNum}_DAPI.tif", photometric="minisblack" #f"{stack_dir}/stack{stackNum}_DAPI.tif", DAPI_max, photometric="minisblack"
+    #)
     tifffile.imwrite(
         f"{stack_dir}/stack{stackNum}_orgs.tif",
         asinus_maxproj,
@@ -292,13 +339,13 @@ def main(image_path, nSlices, nStacks, channels):
 
     lobule_dir = image_path
     organelle_dir = lobule_dir + "/Mito_Perox_LD_Actin"
-    nuclei_dir = lobule_dir + "/DAPI"
+    #nuclei_dir = lobule_dir + "/DAPI"
 
     # get coordinates from file
     CV_coords, PV_coords = getVeinCoords(lobule_dir)
 
     # iterate through each acinus
-    for asinusNum in range(3):
+    for asinusNum in range(3): #should be 3
         # create directory for acinus
         acinus_dir = makeAcinusDir(lobule_dir, asinusNum)
 
@@ -320,8 +367,8 @@ def main(image_path, nSlices, nStacks, channels):
             print(crop_info)
             print("ran sample")
             # get DAPI max projection
-            DAPI_max = getDAPI(nuclei_dir, nSlices, stackNum, crop_info)
-            print("ran DAPI")
+            #DAPI_max = getDAPI(nuclei_dir, nSlices, stackNum, crop_info)
+            #print("ran DAPI")
 
             # get all other channels
             asinus_maxproj = getOrgStacks(
@@ -330,13 +377,14 @@ def main(image_path, nSlices, nStacks, channels):
             print("ran orgs")
 
             # output as multipage TIF files
-            outputTIFs(acinus_dir, stackNum, asinusNum, DAPI_max, asinus_maxproj)
+            outputTIFs(acinus_dir, stackNum, asinusNum, asinus_maxproj) #outputTIFs(acinus_dir, stackNum, asinusNum, DAPI_max, asinus_maxproj)
 
 
 if __name__ == "__main__":
-    print(len(paths.male_cnt_paths))
+    
+    print(len(paths.female_cnt_paths))
 
-    file_paths = paths.male_cnt_paths
+    file_paths = paths.female_cnt_paths
     files = list(set([p[:-8] for p in file_paths]))
     print(len(file_paths))
     print(len(files))
@@ -344,5 +392,5 @@ if __name__ == "__main__":
     for path in files:
         channels = {"actin": "C01", "mito": "C00", "lipid": "C02", "peroxi": "C03"}
         n_slices = 10
-        n_stacks = 1
+        n_stacks = 10
         main(path, n_slices, n_stacks, channels)

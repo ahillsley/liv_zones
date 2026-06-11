@@ -7,7 +7,7 @@ from skimage.measure import regionprops_table
 # Adjust default values here
 # --------------------------
 mito_aspect_split = (1.352, 1.970)
-ld_area_split = (0.88, 2.283)
+ld_area_split = (1.0, 5.0, 15.0) #could be corrected using 4 types (1.5,5.0,15.0) (0.88, 2.283)
 peroxisome_aspect_split = (1.327, 1.843)  # completely made up, need to change
 
 
@@ -24,7 +24,7 @@ def organelle_features(
     scale,
     mito_aspect_split=mito_aspect_split,
     ld_area_split=ld_area_split,
-    organelle_list=["mitos", "lipid_droplets", "peroxisomes", "nuclei"],
+    organelle_list = ["mitos", "lipid_droplets", "peroxisomes", "nuclei"],
 ):
 
     cell_level_masks = Masks(path)
@@ -86,7 +86,8 @@ def mito_properties(
     mito_props["aspect_ratio"] = (
         mito_props["axis_major_length"] / mito_props["axis_minor_length"]
     )
-
+    # use formula to calc circularity
+    mito_props["circularity"] = Circularities(mito_props)
     # use formula to calc boundry to cell edge
     mito_props["boundry_dist"] = map_to_cell(mito_props, masks.cell_edge_distance)
 
@@ -125,6 +126,7 @@ def lipid_droplet_properties(
             "centroid",
             "axis_major_length",
             "axis_minor_length",
+            "solidity",
         ),
     )
 
@@ -140,6 +142,8 @@ def lipid_droplet_properties(
     ld_props["aspect_ratio"] = (
         ld_props["axis_major_length"] / ld_props["axis_minor_length"]
     )
+    # use formula to calc circularity
+    ld_props["circularity"] = Circularities(ld_props)
 
     ld_props["boundry_dist"] = map_to_cell(ld_props, masks.cell_edge_distance)
 
@@ -151,7 +155,8 @@ def lipid_droplet_properties(
         ld_props["area_type_1"],
         ld_props["area_type_2"],
         ld_props["area_type_3"],
-    ) = split_types(ld_props, "area", ld_area_split)
+        ld_props["area_type_4"],
+    ) = split_types_LD(ld_props, "area", ld_area_split)
 
     if save is True:
         ld_props.to_csv(f"{save_path}/lipid_droplet_properties.csv")
@@ -194,6 +199,8 @@ def peroxisome_properties(
     peroxi_props["aspect_ratio"] = (
         peroxi_props["axis_major_length"] / peroxi_props["axis_minor_length"]
     )
+    # use formula to calc circularity
+    peroxi_props["circularity"] = Circularities(peroxi_props)
 
     # use formula to calc boundry to cell edge
     peroxi_props["boundry_dist"] = map_to_cell(peroxi_props, masks.cell_edge_distance)
@@ -227,6 +234,7 @@ def nuclei_properties(nuclei_mask, masks, save_path, scale, save=True):
             "centroid",
             "axis_major_length",
             "axis_minor_length",
+            "solidity",
         ),
     )
 
@@ -242,6 +250,8 @@ def nuclei_properties(nuclei_mask, masks, save_path, scale, save=True):
     nuclei_props["aspect_ratio"] = (
         nuclei_props["axis_major_length"] / nuclei_props["axis_minor_length"]
     )
+    # use formula to calc circularity
+    nuclei_props["circularity"] = Circularities(nuclei_props)
 
     # use formula to calc boundry to cell edge
     nuclei_props["boundry_dist"] = map_to_cell(nuclei_props, masks.cell_edge_distance)
@@ -257,6 +267,12 @@ def nuclei_properties(nuclei_mask, masks, save_path, scale, save=True):
 
     return nuclei_props
 
+
+
+def Circularities(props):
+    Cir = (4 * np.pi * props['area']) / (props['perimeter'] ** 2)
+
+    return Cir
 
 def map_to_cell(props, mask):
     y_cords = np.asarray(props["centroid-0"], dtype="int")
@@ -275,6 +291,19 @@ def split_types(organelle_list, prop, bounds):
     type_2 = np.logical_or(type_1, type_3) == False
 
     return type_1, type_2, type_3
+
+#specific for LD wich need to be split into 4 types
+def split_types_LD(organelle_list, prop, bounds):
+     """
+     Split the given dataframe into types based on "prop" and cutoffs
+     """
+      # Split the organelle_list into four types
+     type_1 = organelle_list[prop] < bounds[0]
+     type_2 = np.logical_and(organelle_list[prop] >= bounds[0], organelle_list[prop] < bounds[1])
+     type_3 = np.logical_and(organelle_list[prop] >= bounds[1], organelle_list[prop] < bounds[2])
+     type_4 = organelle_list[prop] >= bounds[2]
+
+     return type_1, type_2, type_3, type_4
 
 
 def ascini_position(props, cv_distance, pv_distance):
