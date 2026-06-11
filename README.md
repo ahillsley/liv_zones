@@ -16,8 +16,10 @@ measurement of **liver zonation** at the organelle level, but the underlying
 segmentation and feature-extraction workflow is general and can be extended to
 other organelles, cell types, and tissues.
 
-Full documentation is available at
-[ahillsley.github.io/liv_zones](https://ahillsley.github.io/liv_zones/).
+![Spatial Organellomics overview: tissue imaging by confocal microscopy is segmented at the tissue scale (single cells) and organelle scale (peroxisomes, mitochondria, lipid droplets) to yield single-cell organelle metrics — shape, size, amount, and position.](images/organelleomics_overview.png)
+
+Full documentation is available
+[here](https://ahillsley.github.io/liv_zones/).
 
 ## Installation
 
