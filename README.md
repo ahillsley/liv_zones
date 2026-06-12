@@ -196,7 +196,7 @@ plot_cell(save_path, cell_number=10)     # detailed view of one cell
 
 For batch processing, `run.py` in the package root wraps these calls with
 configurable flags and loops over a list of images. The
-[full tutorial](https://ahillsley.github.io/liv_zones/) walks through every
+[full tutorial](notebooks/) walks through every
 option.
 
 ## Tutorial

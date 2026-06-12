@@ -8,7 +8,7 @@ from skimage.measure import regionprops_table
 # --------------------------
 mito_aspect_split = (1.352, 1.970)
 ld_area_split = (1.0, 5.0, 15.0) #could be corrected using 4 types (1.5,5.0,15.0) (0.88, 2.283)
-peroxisome_aspect_split = (1.327, 1.843)  # completely made up, need to change
+peroxisome_aspect_split = (1.327, 1.843)
 
 
 class Masks:

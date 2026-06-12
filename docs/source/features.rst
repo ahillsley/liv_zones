@@ -29,6 +29,9 @@ These features are calculated for all organelles
 
 * **aspect ratio**: ratio of the major axis to the minor axis
 
+* **circularity**: measure of how closely the organelle resembles a perfect circle,
+  calculated as :math:`4{\pi} \cdot \text{area} / \text{perimeter}^2` (1 = perfect circle)
+
 * **boundry distance**: distance from the centroid of the organelle to the nearest boundary of
   the cell **in pixels**
 
@@ -40,21 +43,34 @@ Mitochondria Specific Features
 ------------------------------
 * ** solidity**: ratio of pixels in the organelle to the pixels in its convex hull
 
-* **aspect type 1**: mitochondria with an aspect ratio < 1.2
+* **aspect type 1**: mitochondria with an aspect ratio < 1.352
 
-* **aspect type 2**: mitochondria with an aspect ratio between 1.2 and 2
+* **aspect type 2**: mitochondria with an aspect ratio between 1.352 and 1.970
 
-* **aspect type 3**: mitochondria with an aspect ratio > 2
+* **aspect type 3**: mitochondria with an aspect ratio > 1.970
 
 
 Lipid Droplet Specific Features
 -------------------------------
 
-* **area type 1**: lipid droplets with an area less than 2.41 :math:`{\mu}`\ m\ :sup:`2`
-  
-* **area type 2**: lipid droplets with an area between 2.41 and 9.64 :math:`{\mu}`\ m\ :sup:`2`
+* **area type 1**: lipid droplets with an area less than 1 :math:`{\mu}`\ m\ :sup:`2`
 
-* **area type 3**: lipid droplets with an area greater than 9.64 :math:`{\mu}`\ m\ :sup:`2`
+* **area type 2**: lipid droplets with an area between 1 and 5 :math:`{\mu}`\ m\ :sup:`2`
+
+* **area type 3**: lipid droplets with an area between 5 and 15 :math:`{\mu}`\ m\ :sup:`2`
+
+* **area type 4**: lipid droplets with an area greater than 15 :math:`{\mu}`\ m\ :sup:`2`
+
+
+Peroxisome Specific Features
+----------------------------
+* **solidity**: ratio of pixels in the organelle to the pixels in its convex hull
+
+* **aspect type 1**: peroxisomes with an aspect ratio < 1.327
+
+* **aspect type 2**: peroxisomes with an aspect ratio between 1.327 and 1.843
+
+* **aspect type 3**: peroxisomes with an aspect ratio > 1.843
 
 
 Cell Level Features

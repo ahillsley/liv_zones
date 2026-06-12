@@ -43,13 +43,19 @@ and that your folders are organized correctly
 
 * Images are expected to be saved as .tif files, although we are working on also supporting .zarr 
 
-* Images channels are expected to be organized as follows:
+* Image channels are mapped to organelles using the ``channels`` dictionary (see below).
+  A typical layout is:
 
   0. Actin
 
   1. Mitochondria
 
   2. Lipid Droplets
+
+  3. Peroxisomes
+
+  * the channel-to-organelle mapping is configurable, so the order above can be changed
+    in the ``channels`` dictionary to match your acquisition
 
   * additional channels are allowed, but they will not be processed
 
@@ -60,15 +66,10 @@ and that your folders are organized correctly
   * I personally recommend creating a seperate folder for each image, then storing the original image as well
     as any outputs within
 
-* The liv_zones analysis also requires 2 other inputs, saved in the output folder:
-
-  * ``cv_distnace.tif``: a binary image segmentation of the central vein, where the central vein is marked by 0s
-
-  * ``pv_distance.tif``: a binary image segmentation of the protal vein, where the portal vein marked by 0s
-
-  * these are used to caclulate the realtive position of each organelle and cell along the ascinus
-
-  * lastly, it is important that these are saved with these exact names, otherwise the program will not recognize them
+* The relative position of each organelle and cell along the ascinus depends on the distance
+  to the central and portal veins. These distance transforms (``central_dist.npy`` and
+  ``portal_dist.npy``) are generated automatically during preprocessing by detecting the
+  veins from the cell masks, so you do not need to supply them manually.
 
 
 In order to run the liv_zones processing, we use the ``run.py`` script
@@ -108,6 +109,13 @@ In order to run the liv_zones processing, we use the ``run.py`` script
                         'path/to/second/folder',
                         ]
 
+   We also define the ``channels`` dictionary, which maps each organelle to its channel
+   index in the image. Adjust these indices to match your acquisition.
+
+.. jupyter-execute::
+
+    channels = {"actin": 0, "mito": 1, "lipid": 2, "peroxi": 3}
+
 3. Next we specify which analyses would like to run
    
   1. ``run_preprocessing``: `True` or `False`, If `True`, will check to make sure that all the files needed for the analysis are present in the specific `save_path` folder, and will create any that are missing. The necessary files are:
@@ -118,11 +126,13 @@ In order to run the liv_zones processing, we use the ``run.py`` script
 
     * ``lipid_droplet_mask.npy``: an instance segmentation mask of all lipid droplets in the image
 
-    * ``cv_distance.npy``: a distance transform from the central vein.
+    * ``peroxisome_mask.npy``: an instance segmentation mask of all peroxisomes in the image
 
-    * ``pv_distance.npy``: a distance transform from the portal vein
+    * ``central_dist.npy``: a distance transform from the central vein.
 
-    * ``boundry_distance.npy``: a distance transform from the boundry of each cell
+    * ``portal_dist.npy``: a distance transform from the portal vein
+
+    * ``boundary_dist.npy``: a distance transform from the boundry of each cell
 
     * It is important that each of these files are named exactly as stated above, if not the program will not recognize them
 
@@ -135,16 +145,17 @@ In order to run the liv_zones processing, we use the ``run.py`` script
     feature_list = [
       'cell_mask',
       'mito_mask',
-      'lipid_droplet_mask',
-      'cv_distance',
-      'pv_distance',
-      'boundry_distance'
+      'lipid_mask',
+      'peroxisome_mask',
+      'central_dist',
+      'portal_dist',
+      'boundary_distance'
       ]
 
 
   2. ``organelle_features``: `True` or `False`, If `True`, will extract features of the organelles provided in `organelle_list` and save them in a csv file
 
-    * ``organelle_list``: possible options are `mitochondria` or `lipid_droplets`, comment out any that you do not wish to calculate
+    * ``organelle_list``: possible options are `mitochondria`, `lipid_droplets`, or `peroxisomes`, comment out any that you do not wish to calculate
 
    .. jupyter-execute::
 
@@ -155,6 +166,7 @@ In order to run the liv_zones processing, we use the ``run.py`` script
      organelle_list = [
         'mitochondria',
         'lipid_droplets',
+        'peroxisomes',
         ]
 
   3. Visualization options:
