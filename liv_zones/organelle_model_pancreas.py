@@ -57,7 +57,7 @@ class OrganelleModel:
 
         if self.model_type == "pancreas_peroxisome":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="../models/Small_Perox_V1",
+                pretrained_model="../models/pancreas_peroxisome_model",
                 device=torch.device("cuda"),
             )
             self.flow = 0.5
@@ -66,7 +66,7 @@ class OrganelleModel:
 
         if self.model_type == "pancreas_large_peroxisome":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="../models/large_perox_LC1_v2",
+                pretrained_model="../models/pancreas_large_peroxisome_model",
                 device=torch.device("cuda"),
             )
             self.flow = 0.5
