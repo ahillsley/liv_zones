@@ -125,6 +125,31 @@ Explores how organelle properties vary across cells and along the tissue axis.
 - [`ascini.plot_ascinus_annotated()`](liv_zones/ascini.py) — cell-segmentation map with each cell labeled by ID
 - [`ascini.plot_properties()`](liv_zones/ascini.py) — per-cell feature trends along the acinus
 
+### Pancreas processing
+
+The package also ships a **pancreas variant** of the pipeline, contributed for
+profiling organelles in pancreatic tissue (endocrine + exocrine regions). It
+lives in parallel `liv_zones/*_pancreas.py` modules so the liver pipeline is left
+untouched, and is driven by [`run_pancreas.py`](liv_zones/run_pancreas.py) (built
+on `preprocess_pancreas`, `organelle_pancreas`, and `cell_pancreas`).
+
+It follows the same general stages — segmentation → organelle features → cell
+aggregation — with two main differences:
+
+- **Pancreas-trained models and tiled segmentation.**
+  [`organelle_model_pancreas.OrganelleModel`](liv_zones/organelle_model_pancreas.py)
+  loads pancreas-specific Cellpose models (`pancreas_cell_model`,
+  `pancreas_mito_model`, `pancreas_peroxisome_model`,
+  `pancreas_large_peroxisome_model` in `liv_zones/models/`; lipid droplets and
+  nuclei reuse the shared models) and segments large sections tile-by-tile.
+- **No acinus geometry.** Pancreas has no portal-to-central axis, so the
+  liver-specific cropping and vein-distance steps are skipped — analysis is
+  per-cell rather than along a spatial axis.
+
+A single multi-channel pancreas plane is available for testing in the
+`male_pancreas2_region6` folder of the [figshare dataset](#sample-data); its
+extra insulin and glucagon channels mark the endocrine region.
+
 ### Outputs
 
 All stages read from and write to a single output folder.

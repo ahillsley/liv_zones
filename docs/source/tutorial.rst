@@ -109,8 +109,8 @@ In order to run the liv_zones processing, we use the ``run.py`` script
                         'path/to/second/folder',
                         ]
 
-   We also define the ``channels`` dictionary, which maps each organelle to its channel
-   index in the image. Adjust these indices to match your acquisition.
+We also define the ``channels`` dictionary, which maps each organelle to its channel
+index in the image. Adjust these indices to match your acquisition.
 
 .. jupyter-execute::
 

@@ -21,11 +21,11 @@ jobs:
         shell: bash -l {0}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - uses: conda-incubator/setup-miniconda@v2
         with:
-          python-version: "3.8.13"
+          python-version: "3.11"
           mamba-version: "*"
           channels: conda-forge
           channel-priority: true
@@ -38,7 +38,7 @@ jobs:
         run: sphinx-build docs/source docs/build/html -b html -v
 
       - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
           path: docs/build/html
           retention-days: 90
@@ -55,4 +55,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
