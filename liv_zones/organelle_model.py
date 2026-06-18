@@ -1,8 +1,19 @@
+import os
+
 import numpy as np
 
 from cellpose import models, utils
 from cellpose.io import imread
 import torch as torch
+
+# Resolve the bundled models relative to this file so paths work regardless
+# of the current working directory (e.g. when run from notebooks/).
+_MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
+
+
+def _model_path(name):
+    return os.path.join(_MODELS_DIR, name)
+
 
 class OrganelleModel:
     def __init__(self, model_type):
@@ -10,7 +21,7 @@ class OrganelleModel:
 
         if self.model_type == "cell":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="path_to_cell_model", device=torch.device("cuda")
+                pretrained_model=_model_path("cell_model"), device=torch.device("cuda")
 
             )
             self.flow = 0.4           #when control and fasted (STV) use 0.4
@@ -21,8 +32,8 @@ class OrganelleModel:
 
         if self.model_type == "lipid_droplet_Small":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="path_to_ld_model", device=torch.device("cuda")
-                
+                pretrained_model=_model_path("lipid_droplet_model"), device=torch.device("cuda")
+
             )
             self.flow = 0.21
             self.cell_prob = 0.0
@@ -31,16 +42,16 @@ class OrganelleModel:
             
         
         if self.model_type == "lipid_droplet_Medium":
-            self.pretrained_model = models.CellposeModel(pretrained_model="path_to_ld_model", device=torch.device("cuda")
-                 
+            self.pretrained_model = models.CellposeModel(pretrained_model=_model_path("lipid_droplet_model"), device=torch.device("cuda")
+
             )
             self.flow = 0.14
             self.cell_prob = 0.0
             self.diameter = 132  # also use 355 for large lipids
             
         if self.model_type == "lipid_droplet_Large":
-            self.pretrained_model = models.CellposeModel(pretrained_model="path_to_ld_model", device=torch.device("cuda")
-                 
+            self.pretrained_model = models.CellposeModel(pretrained_model=_model_path("lipid_droplet_model"), device=torch.device("cuda")
+
             )
             self.flow = 0.4
             self.cell_prob = 0.0
@@ -48,7 +59,7 @@ class OrganelleModel:
 
         if self.model_type == "mito":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="path_to_mito_model", device=torch.device("cuda")
+                pretrained_model=_model_path("mito_model"), device=torch.device("cuda")
             )
             self.flow = 0.0
             self.cell_prob = -0.1
@@ -56,7 +67,7 @@ class OrganelleModel:
 
         if self.model_type == "peroxisome":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="path_to_peroxisome_model", device=torch.device("cuda")
+                pretrained_model=_model_path("peroxisome_model"), device=torch.device("cuda")
             )
             self.flow = 0.0
             self.cell_prob = -0.1
@@ -64,7 +75,7 @@ class OrganelleModel:
 
         if self.model_type == "nuclei":
             self.pretrained_model = models.CellposeModel(
-                pretrained_model="path_to_nuclei_model", device=torch.device("cuda")
+                pretrained_model=_model_path("nuclei_model"), device=torch.device("cuda")
             )
             self.flow = 0.4
             self.cell_prob = 0.0
