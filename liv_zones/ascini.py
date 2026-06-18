@@ -83,20 +83,28 @@ def plot_cell(
     lipid_outline = utils.masks_to_outlines(lipid_mask)
     lipid_mask[lipid_outline == 1] = 0
 
+    peroxi_mask = np.load(f"{mask_path}/peroxisome_mask.npy")
+    peroxi_outline = utils.masks_to_outlines(peroxi_mask)
+    peroxi_mask[peroxi_outline == 1] = 0
+
     actin_raw_roi = image[0, bbox[0] : bbox[1], bbox[2] : bbox[3]]
     mito_raw_roi = image[1, bbox[0] : bbox[1], bbox[2] : bbox[3]] * cell_mask_roi
     lipid_raw_roi = image[2, bbox[0] : bbox[1], bbox[2] : bbox[3]] * cell_mask_roi
+    peroxi_raw_roi = image[3, bbox[0] : bbox[1], bbox[2] : bbox[3]] * cell_mask_roi
 
     mito_mask_roi = mito_mask[bbox[0] : bbox[1], bbox[2] : bbox[3]] * cell_mask_roi
     lipid_mask_roi = lipid_mask[bbox[0] : bbox[1], bbox[2] : bbox[3]] * cell_mask_roi
+    peroxi_mask_roi = peroxi_mask[bbox[0] : bbox[1], bbox[2] : bbox[3]] * cell_mask_roi
 
-    fig, axs = plt.subplots(2, 3)
+    fig, axs = plt.subplots(2, 4)
     axs[0, 0].imshow(actin_raw_roi)
     axs[0, 1].imshow(mito_raw_roi)
     axs[0, 2].imshow(lipid_raw_roi)
+    axs[0, 3].imshow(peroxi_raw_roi)
 
     axs[1, 1].imshow(mito_mask_roi)
     axs[1, 2].imshow(lipid_mask_roi)
+    axs[1, 3].imshow(peroxi_mask_roi)
     [axi.set_axis_off() for axi in axs.ravel()]
 
     plt.savefig(
