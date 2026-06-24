@@ -127,21 +127,25 @@ Explores how organelle properties vary across cells and along the tissue axis.
 
 ### Pancreas processing
 
-The package also ships a **pancreas variant** of the pipeline, contributed for
-profiling organelles in pancreatic tissue (endocrine + exocrine regions). It
-lives in parallel `liv_zones/*_pancreas.py` modules so the liver pipeline is left
-untouched, and is driven by [`run_pancreas.py`](liv_zones/run_pancreas.py) (built
-on `preprocess_pancreas`, `organelle_pancreas`, and `cell_pancreas`).
+The same pipeline can profile organelles in pancreatic tissue (endocrine +
+exocrine regions). Rather than a separate set of modules, this is selected with a
+`tissue` argument: the core functions
+[`preprocessing()`](liv_zones/preprocess.py),
+[`organelle_features()`](liv_zones/organelle.py) and
+[`cell_features()`](liv_zones/cell.py) all accept `tissue="liver"` (default) or
+`tissue="pancreas"`. In [`run.py`](liv_zones/run.py) set `tissue = "pancreas"`
+near the top to switch the whole run.
 
 It follows the same general stages — segmentation → organelle features → cell
-aggregation — with two main differences:
+aggregation — with two main differences when `tissue="pancreas"`:
 
 - **Pancreas-trained models and tiled segmentation.**
-  [`organelle_model_pancreas.OrganelleModel`](liv_zones/organelle_model_pancreas.py)
-  loads pancreas-specific Cellpose models (`pancreas_cell_model`,
-  `pancreas_mito_model`, `pancreas_peroxisome_model`,
-  `pancreas_large_peroxisome_model` in `liv_zones/models/`; lipid droplets and
-  nuclei reuse the shared models) and segments large sections tile-by-tile.
+  [`OrganelleModel`](liv_zones/organelle_model.py) loads pancreas-specific
+  Cellpose models (`pancreas_cell_model`, `pancreas_mito_model`,
+  `pancreas_peroxisome_model`, `pancreas_large_peroxisome_model` in
+  `liv_zones/models/`; lipid droplets and nuclei reuse the shared models) and
+  segments large sections tile-by-tile. A `large_peroxisomes` organelle class is
+  also available.
 - **No acinus geometry.** Pancreas has no portal-to-central axis, so the
   liver-specific cropping and vein-distance steps are skipped — analysis is
   per-cell rather than along a spatial axis.

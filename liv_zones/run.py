@@ -11,6 +11,10 @@ Define scale and file paths
 
 scale = 22.187  # pixels per micron
 
+# Which tissue is being processed? "liver" or "pancreas".
+# This selects the segmentation models and whether acinus/vein geometry is used.
+tissue = "liver"
+
 
 image_paths = [" ",
 
@@ -28,25 +32,35 @@ Options on what to run
 # Do you want to run the preprocessing?
 run_preprocessing = True
 
-# comment out any features that you don't want re-calculated
-feature_list = [
-    "cell_mask",
-    "mito_mask",
-    "lipid_mask",
-    "peroxisome_mask",
-    "nuclei_mask",
-    "central_dist",
-    #"portal_dist",
-    "boundary_distance",
-]
-
-channels = {"actin": 0, "mito": 1, "lipid": 2, "peroxi": 3}  #{"actin": 0, "nuclei": 1, "mito": 2, "lipid": 3, "peroxi": 4}
+# comment out any features / channels / organelles that you don't want re-calculated
+if tissue == "pancreas":
+    feature_list = [
+        "cell_mask",
+        "mito_mask",
+        "lipid_mask",
+        "peroxisome_mask",
+        "large_peroxisome_mask",
+        #"nuclei_mask",
+        "boundary_distance",
+    ]
+    channels = {"mito": 1, "actin": 4, "lipid": 0, "peroxi": 5}
+    organelle_list = ["mitochondria", "lipid_droplets", "peroxisomes", "large_peroxisomes"]
+else:
+    feature_list = [
+        "cell_mask",
+        "mito_mask",
+        "lipid_mask",
+        "peroxisome_mask",
+        "nuclei_mask",
+        "central_dist",
+        #"portal_dist",
+        "boundary_distance",
+    ]
+    channels = {"actin": 0, "mito": 1, "lipid": 2, "peroxi": 3}  #{"actin": 0, "nuclei": 1, "mito": 2, "lipid": 3, "peroxi": 4}
+    organelle_list = ["mitochondria", "lipid_droplets", "peroxisomes", "nuclei"]
 
 # Do you want to extract individual organelle features?
 organelle_features = True
-
-# comment out any organelles you dont want re-calculated
-organelle_list = ["mitochondria", "lipid_droplets", "peroxisomes", "nuclei"]
 
 # Do you want to calculate average features per cell?
 cell_features = True
@@ -80,25 +94,25 @@ if __name__ == "__main__":
 
         # pre-processing
         if run_preprocessing is True:
-            pre.preprocessing(image_path, save_path, channels, feature_list)
+            pre.preprocessing(image_path, save_path, channels, feature_list, tissue=tissue)
 
         else:
             pre.file_check(save_path)
-        
+
         torch.cuda.empty_cache()
         # extract individual organelle features
         if organelle_features is True:
 
             print("extracting individual organelle features")
             org.organelle_features(
-                path=save_path, scale=scale, organelle_list=organelle_list,
+                path=save_path, scale=scale, organelle_list=organelle_list, tissue=tissue,
             )
 
         # extract average features per cell
         if cell_features is True:
 
             print("averaging features per cell")
-            c.cell_features(save_path, scale=scale)
+            c.cell_features(save_path, scale=scale, tissue=tissue)
 
         # visualizing the results
         if plot_labeled_ascinus is True:

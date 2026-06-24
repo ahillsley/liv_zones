@@ -129,6 +129,17 @@ peroxisome_properties = [
     "type_3_peroxisome_dist_from_edge",
 ]
 
+large_peroxisome_properties = [
+    "large_peroxisome_density",
+    "large_peroxisome_avg_area",
+    "large_peroxisome_perimeter",
+    "large_peroxisome_percent_total_area",
+    "large_peroxisome_distance_from_edge",
+    "large_peroxisome_aspect_ratio",
+    "large_peroxisome_circularity",
+    "large_peroxisome_solidity",
+]
+
 nuclei_properties = [
     "nuclei_density",
     "nuclei_perimeter",
@@ -140,7 +151,9 @@ nuclei_properties = [
 ]
 
 
-def cell_features(path, scale):
+def cell_features(path, scale, tissue="liver"):
+    if tissue not in ("liver", "pancreas"):
+        raise ValueError(f"tissue must be 'liver' or 'pancreas', got {tissue!r}")
 
     property_list = []
 
@@ -163,17 +176,24 @@ def cell_features(path, scale):
         peroxisome_props = None
 
     try:
+        large_peroxisome_props = pd.read_csv(f"{path}/large_peroxisome_properties.csv")
+        property_list += large_peroxisome_properties
+    except:
+        large_peroxisome_props = None
+
+    try:
         nuclei_props = pd.read_csv(f"{path}/nuclei_properties.csv")
         property_list += nuclei_properties
     except:
         nuclei_props = None
 
-    masks = org.Masks(path)
+    masks = org.Masks(path, tissue=tissue)
 
     cell_props(
         mito_props=mito_props,
         lipid_props=lipid_props,
         peroxisome_props=peroxisome_props,
+        large_peroxisome_props=large_peroxisome_props,
         nuclei_props=nuclei_props,
         save_path=path,
         masks=masks,
@@ -186,6 +206,7 @@ def cell_props(
     mito_props,
     lipid_props,
     peroxisome_props,
+    large_peroxisome_props,
     nuclei_props,
     save_path,
     masks,
@@ -206,14 +227,14 @@ def cell_props(
 
     cell_props = pd.concat((cell_props_1, cell_props_2), axis=1)
     cell_props["area"] = cell_props["area"] / scale ** 2
-    cell_props["ascini_position"] = org.ascini_position(
-        cell_props, masks.cv_distance, masks.pv_distance
-    )
+    if masks.has_acinus:
+        cell_props["ascini_position"] = org.ascini_position(
+            cell_props, masks.cv_distance, masks.pv_distance
+        )
 
     organelles = OrganelleFuncs(index=1, cell_props=cell_props)
 
-    for cell in cell_props["label"]:
-        index = cell - 1
+    for index, cell in enumerate(cell_props["label"]):
         organelles.index = index
 
         # Mitochondria Properties
@@ -514,6 +535,38 @@ def cell_props(
                 index
             ] = organelles.type_dist_from_edge("peroxi", 3)
 
+        # Large Peroxisome Properties
+        # ---------------------------
+        if large_peroxisome_props is not None:
+            organelles.single_cell_large_peroxisomes = large_peroxisome_props[
+                large_peroxisome_props["cell_id"] == cell
+            ]
+
+            cell_props["large_peroxisome_density"][index] = organelles.density(
+                "large_peroxi"
+            )
+            cell_props["large_peroxisome_avg_area"][index] = organelles.avg_area(
+                "large_peroxi"
+            )
+            cell_props["large_peroxisome_perimeter"][index] = organelles.avg_perimeter(
+                "large_peroxi"
+            )
+            cell_props["large_peroxisome_percent_total_area"][
+                index
+            ] = organelles.percent_total_area("large_peroxi")
+            cell_props["large_peroxisome_aspect_ratio"][index] = organelles.aspect_ratio(
+                "large_peroxi"
+            )
+            cell_props["large_peroxisome_circularity"][
+                index
+            ] = organelles.avg_circularity("large_peroxi")
+            cell_props["large_peroxisome_solidity"][index] = organelles.solidity(
+                "large_peroxi"
+            )
+            cell_props["large_peroxisome_distance_from_edge"][
+                index
+            ] = organelles.distance_from_edge("large_peroxi")
+
         if nuclei_props is not None:
             organelles.single_cell_nuclei = nuclei_props[
                 nuclei_props["cell_id"] == cell
@@ -563,6 +616,7 @@ class OrganelleFuncs:
         self.single_cell_mitos = None
         self.single_cell_lipid_droplets = None
         self.single_cell_peroxisomes = None
+        self.single_cell_large_peroxisomes = None
         self.single_cell_nuclei = None
 
     def avg_circularity(self, organelle):
@@ -575,10 +629,13 @@ class OrganelleFuncs:
         elif organelle == "peroxi":
             return np.mean(self.single_cell_peroxisomes["circularity"])
 
+        elif organelle == "large_peroxi":
+            return np.mean(self.single_cell_large_peroxisomes["circularity"])
+
         elif organelle == "nuclei":
             return np.mean(self.single_cell_nuclei["circularity"])
-       
-        
+
+
     def density(self, organelle, org_type=False):
         if organelle == "mito":
             organelle_count = len(self.single_cell_mitos)
@@ -588,6 +645,9 @@ class OrganelleFuncs:
 
         elif organelle == "peroxi":
             organelle_count = len(self.single_cell_peroxisomes)
+
+        elif organelle == "large_peroxi":
+            organelle_count = len(self.single_cell_large_peroxisomes)
 
         elif organelle == "nuclei":
             organelle_count = len(self.single_cell_nuclei)
@@ -604,10 +664,13 @@ class OrganelleFuncs:
         elif organelle == "peroxi":
             return np.mean(self.single_cell_peroxisomes["area"])
 
+        elif organelle == "large_peroxi":
+            return np.mean(self.single_cell_large_peroxisomes["area"])
+
         elif organelle == "nuclei":
             return np.mean(self.single_cell_nuclei["area"])
-    
-    
+
+
     def avg_perimeter(self, organelle):
         if organelle == "mito":
             return np.mean(self.single_cell_mitos["perimeter"])
@@ -618,9 +681,12 @@ class OrganelleFuncs:
         elif organelle == "peroxi":
             return np.mean(self.single_cell_peroxisomes["perimeter"])
 
+        elif organelle == "large_peroxi":
+            return np.mean(self.single_cell_large_peroxisomes["perimeter"])
+
         elif organelle == "nuclei":
             return np.mean(self.single_cell_nuclei["perimeter"])
-        
+
 
     def percent_total_area(self, organelle):
         if organelle == "mito":
@@ -631,6 +697,9 @@ class OrganelleFuncs:
 
         elif organelle == "peroxi":
             organelle_area = np.sum(self.single_cell_peroxisomes["area"])
+
+        elif organelle == "large_peroxi":
+            organelle_area = np.sum(self.single_cell_large_peroxisomes["area"])
 
         elif organelle == "nuclei":
             organelle_area = np.sum(self.single_cell_nuclei["area"])
@@ -643,7 +712,10 @@ class OrganelleFuncs:
 
         elif organelle == "peroxi":
             return np.mean(self.single_cell_peroxisomes["aspect_ratio"])
-        
+
+        elif organelle == "large_peroxi":
+            return np.mean(self.single_cell_large_peroxisomes["aspect_ratio"])
+
         elif organelle == "ld":
             return np.mean(self.single_cell_lipid_droplets["aspect_ratio"])
 
@@ -656,7 +728,10 @@ class OrganelleFuncs:
 
         elif organelle == "peroxi":
             return np.mean(self.single_cell_peroxisomes["solidity"])
-        
+
+        elif organelle == "large_peroxi":
+            return np.mean(self.single_cell_large_peroxisomes["solidity"])
+
         elif organelle == "ld":
             return np.mean(self.single_cell_lipid_droplets["solidity"])
 
@@ -669,6 +744,9 @@ class OrganelleFuncs:
 
         elif organelle == "peroxi":
             organelle_type = self.single_cell_peroxisomes
+
+        elif organelle == "large_peroxi":
+            organelle_type = self.single_cell_large_peroxisomes
 
         elif organelle == "nuclei":
             organelle_type = self.single_cell_nuclei
@@ -783,18 +861,21 @@ class OrganelleFuncs:
 
     def type_percent_organelles(self, organelle, org_type):
         if organelle == "mito":
-            return np.sum(self.single_cell_mitos[f"aspect_type_{org_type}"]) / len(
-                self.single_cell_mitos
+            denom = len(self.single_cell_mitos)
+            return 0.0 if denom == 0 else (
+                np.sum(self.single_cell_mitos[f"aspect_type_{org_type}"]) / denom
             )
 
         elif organelle == "ld":
-            return np.sum(
-                self.single_cell_lipid_droplets[f"area_type_{org_type}"]
-            ) / len(self.single_cell_lipid_droplets)
+            denom = len(self.single_cell_lipid_droplets)
+            return 0.0 if denom == 0 else (
+                np.sum(self.single_cell_lipid_droplets[f"area_type_{org_type}"]) / denom
+            )
 
         elif organelle == "peroxi":
-            return np.sum(self.single_cell_peroxisomes[f"aspect_type_{org_type}"]) / len(
-                self.single_cell_peroxisomes
+            denom = len(self.single_cell_peroxisomes)
+            return 0.0 if denom == 0 else (
+                np.sum(self.single_cell_peroxisomes[f"aspect_type_{org_type}"]) / denom
             )
 
     def type_dist_from_edge(self, organelle, org_type):
@@ -821,6 +902,10 @@ class OrganelleFuncs:
 #     return Cir
 
 def dist_from_edge(cell, organelle_list):
+    # No organelles of this type in the cell -> no meaningful distance.
+    if organelle_list is None or len(organelle_list) == 0:
+        return 0.0
+
     cc_x = float(cell["centroid-0"])
     cc_y = float(cell["centroid-1"])
 

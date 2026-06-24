@@ -12,11 +12,17 @@ peroxisome_aspect_split = (1.327, 1.843)
 
 
 class Masks:
-    def __init__(self, path):
+    def __init__(self, path, tissue="liver"):
         self.cell_mask = np.load(f"{path}/cell_mask.npy")
-        self.cv_distance = np.load(f"{path}/central_dist.npy")
-        self.pv_distance = np.load(f"{path}/portal_dist.npy")
         self.cell_edge_distance = np.load(f"{path}/boundary_dist.npy")
+
+        # Pancreas has no portal-to-central axis, so the central/portal vein
+        # distances (and the acinus position derived from them) only exist for
+        # liver tissue.
+        self.has_acinus = tissue == "liver"
+        if self.has_acinus:
+            self.cv_distance = np.load(f"{path}/central_dist.npy")
+            self.pv_distance = np.load(f"{path}/portal_dist.npy")
 
 
 def organelle_features(
@@ -25,9 +31,12 @@ def organelle_features(
     mito_aspect_split=mito_aspect_split,
     ld_area_split=ld_area_split,
     organelle_list = ["mitos", "lipid_droplets", "peroxisomes", "nuclei"],
+    tissue="liver",
 ):
+    if tissue not in ("liver", "pancreas"):
+        raise ValueError(f"tissue must be 'liver' or 'pancreas', got {tissue!r}")
 
-    cell_level_masks = Masks(path)
+    cell_level_masks = Masks(path, tissue=tissue)
 
     organelles = " ".join(organelle_list)
 
@@ -45,6 +54,12 @@ def organelle_features(
         peroxisome_mask = np.load(f"{path}/peroxisome_mask.npy")
         peroxisome_properties(
             peroxisome_mask, cell_level_masks, path, scale, peroxisome_aspect_split
+        )
+
+    if "large_perox" in organelles:
+        large_peroxisome_mask = np.load(f"{path}/large_peroxisome_mask.npy")
+        large_peroxisome_properties(
+            large_peroxisome_mask, cell_level_masks, path, scale, peroxisome_aspect_split
         )
 
     if "nuclei" in organelles:
@@ -93,9 +108,10 @@ def mito_properties(
 
     # use new ascini distance measure
     # portal vein = 1, central vein = -1
-    mito_props["ascini_position"] = ascini_position(
-        mito_props, masks.cv_distance, masks.pv_distance
-    )
+    if masks.has_acinus:
+        mito_props["ascini_position"] = ascini_position(
+            mito_props, masks.cv_distance, masks.pv_distance
+        )
 
     (
         mito_props["aspect_type_1"],
@@ -147,9 +163,10 @@ def lipid_droplet_properties(
 
     ld_props["boundry_dist"] = map_to_cell(ld_props, masks.cell_edge_distance)
 
-    ld_props["ascini_position"] = ascini_position(
-        ld_props, masks.cv_distance, masks.pv_distance
-    )
+    if masks.has_acinus:
+        ld_props["ascini_position"] = ascini_position(
+            ld_props, masks.cv_distance, masks.pv_distance
+        )
 
     (
         ld_props["area_type_1"],
@@ -207,9 +224,10 @@ def peroxisome_properties(
 
     # use new ascini distance measure
     # portal vein = 1, central vein = -1
-    peroxi_props["ascini_position"] = ascini_position(
-        peroxi_props, masks.cv_distance, masks.pv_distance
-    )
+    if masks.has_acinus:
+        peroxi_props["ascini_position"] = ascini_position(
+            peroxi_props, masks.cv_distance, masks.pv_distance
+        )
 
     (
         peroxi_props["aspect_type_1"],
@@ -220,6 +238,65 @@ def peroxisome_properties(
         peroxi_props.to_csv(f"{save_path}/peroxisome_properties.csv")
 
     return peroxi_props
+
+
+def large_peroxisome_properties(
+    large_peroxisome_mask,
+    masks,
+    save_path,
+    scale,
+    peroxisome_aspect_split,
+    save=True,  # pixels / micron
+):
+
+    # returns props in pixel units
+    large_peroxi_props_dict = regionprops_table(
+        large_peroxisome_mask,
+        properties=(
+            "label",
+            "area",
+            "perimeter",
+            "centroid",
+            "axis_major_length",
+            "axis_minor_length",
+            "solidity",
+        ),
+    )
+
+    large_peroxi_props = pd.DataFrame.from_dict(large_peroxi_props_dict)
+
+    # convert from pixels to microns
+    large_peroxi_props["area"] = large_peroxi_props["area"] / (scale ** 2)
+    large_peroxi_props["perimeter"] = large_peroxi_props["perimeter"] / scale
+    large_peroxi_props["axis_major_length"] = large_peroxi_props["axis_major_length"] / scale
+    large_peroxi_props["axis_minor_length"] = large_peroxi_props["axis_minor_length"] / scale
+
+    large_peroxi_props["cell_id"] = map_to_cell(large_peroxi_props, masks.cell_mask)
+    large_peroxi_props["aspect_ratio"] = (
+        large_peroxi_props["axis_major_length"] / large_peroxi_props["axis_minor_length"]
+    )
+    # use formula to calc circularity
+    large_peroxi_props["circularity"] = Circularities(large_peroxi_props)
+
+    # use formula to calc boundry to cell edge
+    large_peroxi_props["boundry_dist"] = map_to_cell(large_peroxi_props, masks.cell_edge_distance)
+
+    # use new ascini distance measure
+    # portal vein = 1, central vein = -1
+    if masks.has_acinus:
+        large_peroxi_props["ascini_position"] = ascini_position(
+            large_peroxi_props, masks.cv_distance, masks.pv_distance
+        )
+
+    (
+        large_peroxi_props["aspect_type_1"],
+        large_peroxi_props["aspect_type_2"],
+        large_peroxi_props["aspect_type_3"],
+    ) = split_types(large_peroxi_props, "aspect_ratio", peroxisome_aspect_split)
+    if save is True:
+        large_peroxi_props.to_csv(f"{save_path}/large_peroxisome_properties.csv")
+
+    return large_peroxi_props
 
 
 def nuclei_properties(nuclei_mask, masks, save_path, scale, save=True):
@@ -258,9 +335,10 @@ def nuclei_properties(nuclei_mask, masks, save_path, scale, save=True):
 
     # use new ascini distance measure
     # portal vein = 1, central vein = -1
-    nuclei_props["ascini_position"] = ascini_position(
-        nuclei_props, masks.cv_distance, masks.pv_distance
-    )
+    if masks.has_acinus:
+        nuclei_props["ascini_position"] = ascini_position(
+            nuclei_props, masks.cv_distance, masks.pv_distance
+        )
 
     if save is True:
         nuclei_props.to_csv(f"{save_path}/nuclei_properties.csv")

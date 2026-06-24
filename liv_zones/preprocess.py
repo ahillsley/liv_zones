@@ -20,18 +20,40 @@ import torch
 
 # Always define save path not including the last /
 
-def preprocessing(image_path, save_path, channels, feature_list=None):
+def preprocessing(image_path, save_path, channels, feature_list=None, tissue="liver"):
     # function to run segmentation of all organelles and get all
     # distance transforms needed for post_processing
+
+    if tissue not in ("liver", "pancreas"):
+        raise ValueError(f"tissue must be 'liver' or 'pancreas', got {tissue!r}")
 
     if feature_list is None:
         feature_list = file_check(save_path)
 
     features = " ".join(feature_list)
 
+    # Pancreas uses its own Cellpose models (and tiled cell segmentation, handled
+    # inside OrganelleModel). Lipid-droplet and nuclei models are shared.
+    if tissue == "pancreas":
+        model_names = {
+            "cell": "pancreas_cell",
+            "mito": "pancreas_mito",
+            "peroxisome": "pancreas_peroxisome",
+            "large_peroxisome": "pancreas_large_peroxisome",
+        }
+        cell_min_size = 1000
+    else:
+        model_names = {
+            "cell": "cell",
+            "mito": "mito",
+            "peroxisome": "peroxisome",
+            "large_peroxisome": None,
+        }
+        cell_min_size = 110000
+
     if "cell" in features:
         print("segmenting cells")
-        cell_model = org_models.OrganelleModel("cell")
+        cell_model = org_models.OrganelleModel(model_names["cell"])
         cell_mask = cell_model.segment(
             img_path=image_path,
             channel=channels["actin"],
@@ -39,13 +61,15 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
             save_path=save_path,
         )
 
-        corrected_cell_mask = remove_small_masks(save_path=save_path, save=True,)
+        corrected_cell_mask = remove_small_masks(
+            save_path=save_path, save=True, min_size=cell_min_size,
+        )
 
-    
+
 
     if "mito" in features:
         print("segmenting mitos")
-        mito_model = org_models.OrganelleModel("mito")
+        mito_model = org_models.OrganelleModel(model_names["mito"])
         mito_mask = mito_model.segment(
             img_path=image_path,
             channel=channels["mito"],
@@ -120,8 +144,18 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
      
     if "perox" in features:
         print("segmenting peroxisomes")
-        peroxisome_model = org_models.OrganelleModel("peroxisome")
+        peroxisome_model = org_models.OrganelleModel(model_names["peroxisome"])
         peroxisome_mask = peroxisome_model.segment(
+            img_path=image_path,
+            channel=channels["peroxi"],
+            save=True,
+            save_path=save_path,
+        )
+
+    if "large_perox" in features:
+        print("segmenting large peroxisomes")
+        large_peroxisome_model = org_models.OrganelleModel(model_names["large_peroxisome"])
+        large_peroxisome_mask = large_peroxisome_model.segment(
             img_path=image_path,
             channel=channels["peroxi"],
             save=True,
@@ -138,7 +172,8 @@ def preprocessing(image_path, save_path, channels, feature_list=None):
             save_path=save_path,
         )
 
-    if "central" in features or "portal" in features:
+    # Pancreas has no portal-to-central axis, so there are no vein distances.
+    if tissue == "liver" and ("central" in features or "portal" in features):
         print("calculating distance to central and portal veins")
         vein_distance = vein_dist(f'{save_path}/mito_mask.npy', save_path)
 
@@ -219,8 +254,8 @@ def cell_edge_distance(save_path):
     return
 
 
-def remove_small_masks(save_path, save=True):
-   
+def remove_small_masks(save_path, save=True, min_size=110000):
+
     os.mkdir(f'{save_path}/small_cells_filtering/')
 
     img = np.load(f"{save_path}/cell_mask.npy")
@@ -231,7 +266,7 @@ def remove_small_masks(save_path, save=True):
 
     img2 = np.load(f"{save_path}/cell_mask.npy") 
 
-    corrected = utils.fill_holes_and_remove_small_masks(img2, min_size=110000)
+    corrected = utils.fill_holes_and_remove_small_masks(img2, min_size=min_size)
     np.save(f"{save_path}/small_cells_filtering/corrected_cell_mask.npy", corrected)
    
     color_mask = plot.mask_rgb(corrected)
