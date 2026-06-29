@@ -189,7 +189,7 @@ from liv_zones.ascini import plot_properties, plot_cell, plot_ascinus_annotated
 
 image_path = "path/to/image.tif"   # multi-channel TIF
 save_path  = "path/to/output"      # results are written here
-scale      = 14.4024               # pixels per micron
+scale      = 22.187               # pixels per micron
 
 # 1. Preprocessing & segmentation
 #    Segments cells and organelles with Cellpose and computes the
