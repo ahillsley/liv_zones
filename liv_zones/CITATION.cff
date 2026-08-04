@@ -32,9 +32,6 @@ keywords:
   - metabolic adaptation
   - Python
 
-# SOFTWARE AUTHORS — contributors to the liv_zones repository code.
-# Order follows repo contribution history.
-# Add or remove people based on who actually contributed code here.
 authors:
   - family-names: "Hillsley"
     given-names: "Alexander"
