@@ -1,24 +1,3 @@
-# CITATION.cff for https://github.com/ahillsley/liv_zones
-#
-# Place this file at the ROOT of the repository, named exactly: CITATION.cff
-#
-# BEFORE THE FIRST RELEASE, EDIT:
-#   - Fill in all ORCID lines (replace 0000-0000-0000-0000 with real ORCIDs,
-#     or delete the orcid line entirely if an author has none)
-#   - Fill in full names for adjavon(lines marked TODO below)
-#   - license: must match the SPDX identifier of the LICENSE file in the repo
-#     (if there is no LICENSE file yet, add one — Zenodo and reusers both need it)
-#   - date-released: update to the date you publish the GitHub release
-#   - version: update to match the git tag you release (e.g. v0.1.0)
-#
-# Do NOT add a top-level `doi:` field before the first release — Zenodo mints it
-# at ingest. After the first release you may add the CONCEPT DOI ("Cite all
-# versions"), never a version DOI.
-#
-# VALIDATE BEFORE COMMITTING:
-#   pip install cffconvert
-#   cffconvert --validate
-
 cff-version: 1.2.0
 message: "If you use this code, please cite both this software and the paper listed under preferred-citation."
 type: software
@@ -34,7 +13,7 @@ abstract: >-
   image correction filters), cell filtering, feature extraction, and
   generation of spatial trend plots. It supports multi-tissue analysis and
   is extensible to new tissue types via community forks.
-version: "0.1.0"
+version: "1.0.0"
 date-released: "2026-04-09"
 license: MIT
 repository-code: "https://github.com/ahillsley/liv_zones"
@@ -75,7 +54,6 @@ authors:
 
   - family-names: "Adjavon"
     given-names: "Diane"
-    orcid: https://orcid.org/0000-0000-0000-0000  # TODO: fill in or delete this line
     affiliation:  "Janelia Research Campus, Howard Hughes Medical Institute, Ashburn, VA, USA"
 
   - family-names: "Aronson"
@@ -85,13 +63,12 @@ authors:
 
 preferred-citation:
   type: article
-  title: "Spatial Organellomics Maps Cell State Diversity and Metabolic Adaptation in Tissues"
-  # TODO: update journal, year, doi, and add volume/pages when paper is published in the journal.
-  # For now pointing to the bioRxiv preprint.
-  journal: "bioRxiv"
-  year: 2024
-  doi: 10.1101/2024.12.06.627285
-  url: "https://www.biorxiv.org/content/10.1101/2024.12.06.627285v2"
+  title: "Multi-organelle signatures map cell state diversity and metabolic adaptation in tissues"
+  journal: "Science"
+  year: 2026
+#Also available as bioRxiv preprint
+  #doi: 10.1101/2024.12.06.627285
+  #url: "https://www.biorxiv.org/content/10.1101/2024.12.06.627285v2"
   authors:
     - family-names: "Adhikari"
       given-names: "Raghabendra"
@@ -107,12 +84,3 @@ preferred-citation:
       given-names: "Jan"
     - family-names: "Feliciano"
       given-names: "Daniel"
-
-# GIT-LFS WARNING
-# Zenodo archives the release tarball GitHub produces, which does NOT include
-# Git-LFS objects. If any trained Cellpose models or large arrays in this repo
-# are tracked by LFS, they will be silently absent from the DOI'd snapshot.
-# Check with:  git lfs ls-files
-# If anything comes back, deposit those files on Figshare alongside the
-# processed source data, or attach them manually to the Zenodo record after
-# the automated ingest completes.
