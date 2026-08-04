@@ -87,6 +87,15 @@ Each stage has **general** steps (organelle profiling on any tissue) and
 axis). The liver-specific steps can be swapped out or skipped when applying the
 pipeline to other tissues.
 
+> **Working with z-stacks:** When analyzing a full z-stack (e.g.
+> 50 z-slices), the pipeline processes one 2D max-projected plane at a time.
+> We recommend grouping consecutive z-slices into **stacks of 10** and
+> max-projecting each group — 50 slices yields 5 stacks (stack\_0: Z00–Z09,
+> stack\_1: Z10–Z19, …, stack\_4: Z40–Z49). Each stack is run through the
+> pipeline independently, producing its own `average_properties_per_cell.csv`.
+> [`track_z_pos.py`](liv_zones/track_z_pos.py) can then be used to link cells
+> across stacks at the acinus level (see [Z-stack aggregation](#z-stack-aggregation-optional) below).
+
 ### 1. Preprocessing & segmentation
 
 Segments the cells and each organelle, then computes the distance maps that
@@ -153,6 +162,25 @@ aggregation — with two main differences when `tissue="pancreas"`:
 A single multi-channel pancreas plane is available for testing in the
 `male_pancreas2_region6` folder of the [figshare dataset](#sample-data); its
 extra insulin and glucagon channels mark the endocrine region.
+
+### Z-stack aggregation (optional)
+
+When the pipeline has been run on multiple z-stacks of the same acinus,
+[`track_z_pos.py`](liv_zones/track_z_pos.py) links the same cells across
+stacks using [motile](https://github.com/funkelab/motile) (Funke lab) — a
+multi-object tracking library that solves cell identity assignment as an
+Integer Linear Program. It takes the `average_properties_per_cell.csv` files
+from each stack as input and produces a single aggregated feature table per
+acinus, with a `z_position` column added to each cell.
+
+This step is **not required** to obtain the per-stack CSV outputs — it is a
+post-processing step for studies that need acinus-level aggregation across the
+full z-volume.
+
+> **Reproducibility:** The figures in the accompanying paper are generated from
+> the motile-aggregated CSV outputs using the analysis scripts deposited at
+> [Felicianod-lab/Spatial-Organellomics](https://github.com/Felicianod-lab/Spatial-Organellomics)
+> — the reproducibility hub for the full study.
 
 ### Outputs
 
