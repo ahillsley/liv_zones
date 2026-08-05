@@ -170,8 +170,8 @@ When the pipeline has been run on multiple z-stacks of the same acinus,
 stacks using [motile](https://github.com/funkelab/motile) (Funke lab) — a
 multi-object tracking library that solves cell identity assignment as an
 Integer Linear Program. It takes the `average_properties_per_cell.csv` files
-from each stack as input and produces a single aggregated feature table per
-acinus, with a `z_position` column added to each cell.
+from each stack as input and produces a single mean feature table per
+acinus called `mean_data_for_linked_cell_masks.csv`, with a new column `cell_id_linked` added to each cell.
 
 This step is **not required** to obtain the per-stack CSV outputs — it is a
 post-processing step for studies that need acinus-level aggregation across the
